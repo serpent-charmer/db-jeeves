@@ -1,0 +1,133 @@
+<html>
+
+
+<head>
+	<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/jquery.fancytree@2.27/dist/skin-lion/ui.fancytree.min.css"
+		rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/jquery.fancytree@2.27/dist/jquery.fancytree-all-deps.min.js"></script>
+	<script src="https://pagecdn.io/lib/ace/1.4.12/ace.min.js"></script>
+	<script src="https://pagecdn.io/lib/ace/1.4.12/theme-tomorrow_night.min.js"></script>
+	<script src="https://pagecdn.io/lib/ace/1.4.12/mode-{{script_lang}}.min.js"></script>
+	<style>
+		body {
+			overflow-y: hidden;
+		}
+
+		#suite {
+			display: flex;
+			height: 100%;
+		}
+
+		#tree-container {
+			overflow: auto;
+			min-width: 15%;
+		}
+
+		#tree {
+			overflow: auto;
+			max-width: 95%;
+			max-height: 90%;
+		}
+
+		#editor-container {
+			width: 100%;
+		}
+
+		#editor {
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>DIR</h1>
+	<div id="suite">
+
+		<div id="tree-container">
+			<div id="tree"></div>
+		</div>
+
+		<div id="editor-container">
+			<div id="editor"></div>
+		</div>
+	</div>
+
+	<script>
+		let editor1 = ace.edit("editor");
+		editor1.setTheme("ace/theme/tomorrow_night");
+		editor1.setFontSize(15);
+		let EditSession = require("ace/edit_session").EditSession;
+
+		Storage.prototype.setObject = function (key, value) {
+			this.setItem(key, JSON.stringify(value));
+		}
+
+		Storage.prototype.getObject = function (key) {
+			var value = this.getItem(key);
+			return value && JSON.parse(value);
+		}
+
+		$(function () {
+			$("#tree").fancytree({
+				skin: "lion",
+				checkbox: false,
+				source:
+					function () {
+						let tcont = localStorage.getItem("tree_content");
+						if (true || (tcont === null)) {
+							return $.ajax({
+								url: "/get_dir",
+								type: "POST",
+								dataType: "json",
+								contentType: "application/json; charset=utf-8",
+								data: JSON.stringify({ "dir": "{{ app_path }}" }),
+								success: function (data) {
+									localStorage.setObject("tree_content", data);
+									localStorage.setObject("mark_dirty", []);
+								},
+							});
+						}
+						return JSON.parse(tcont);
+					},
+				init: function (event, data) {
+
+				},
+
+				activate: function (event, data) {
+					let dkey = data.node.key;
+					if (!data.node.folder) {
+						$.ajax({
+							url: "/get_file",
+							type: "POST",
+							contentType: "application/json; charset=utf-8",
+							data: JSON.stringify({ "path": dkey }),
+							dataType: "json",
+							success: function (resp_data) {
+								//editor1.setValue(data.content, -1);
+								let session = new EditSession(resp_data.content);
+								session.setMode("ace/mode/{{script_lang}}");
+								session.setUseSoftTabs(true);
+								session.on("change", function (e) {
+									let dirt = localStorage.getObject("mark_dirty");
+									dirt.push(dkey);
+									console.log(data.node.title);
+								});
+								editor1.setSession(session);
+							},
+							error: function (xhr, status, error) {
+								console.log(status, error);
+							}
+						});
+
+						// $("#status").text("Activate: " + data.node.title);
+					}
+				},
+			});
+
+		});
+	</script>
+</body>
+
+</html>
