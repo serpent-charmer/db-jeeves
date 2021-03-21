@@ -4,17 +4,21 @@ import os
 
 
 from uuid import uuid4
-from distutils.dir_util import copy_tree, remove_tree
+from distutils.dir_util import copy_tree, remove_tree, create_tree
 
+
+DEFAULT_PORT = 8000
 
 def copy_new_img(path, new_path):
     u_path = os.path.join('users', new_path)
+    i_path = os.path.join('images', path)
     try:
         remove_tree(u_path)
     except:
         pass
     finally:
-        copy_tree(os.path.join('images', path), u_path)
+        create_tree(u_path, os.listdir(i_path))
+        copy_tree(i_path, u_path)
     return u_path
 
 
@@ -47,7 +51,7 @@ def build_custom_img(path, name):
     container = client.containers.create(name,
                                          name=container_name,
                                          extra_hosts={"mysql-db": '10.11.3.3'},
-                                         network='db_network', detach=True, ports={8000: None})
+                                         network='db_network', detach=True, ports={DEFAULT_PORT: None})
 
     container.start()
     container.reload()
@@ -57,6 +61,19 @@ def build_custom_img(path, name):
 
     return container
 
+def get_container_logs(name):
+    container_name = 'container-'+name
+
+    client = docker.from_env()
+
+    container = client.containers.get(container_name)
+
+    client.close()
+
+    return container.logs().decode(encoding='utf-8')
+
+def get_container_port(container):
+    return container.ports['%d/tcp' % DEFAULT_PORT][0]['HostPort']
 
 if __name__ == '__main__':
     nm = 'new-user-312315fwefg3453'

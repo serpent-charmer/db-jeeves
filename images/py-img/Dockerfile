@@ -36,7 +36,7 @@ RUN conda install -y -c anaconda flask \
 	pymysql=1.0.2 \
 && conda clean -ya
 
-COPY ./my_app/ .
+COPY ./app/ .
 
 ENTRYPOINT gunicorn --workers=4 --threads 10 -b 0.0.0.0:8000 wsgi:_app
 

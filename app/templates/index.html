@@ -2,16 +2,25 @@
 
 
 <head>
-	<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-	<link href="https://cdn.jsdelivr.net/npm/jquery.fancytree@2.27/dist/skin-lion/ui.fancytree.min.css"
-		rel="stylesheet">
+	{% include 'jquery.jinja' %}
+
 	<script src="https://cdn.jsdelivr.net/npm/jquery.fancytree@2.27/dist/jquery.fancytree-all-deps.min.js"></script>
+
 	<script src="https://pagecdn.io/lib/ace/1.4.12/ace.min.js"></script>
 	<script src="https://pagecdn.io/lib/ace/1.4.12/theme-tomorrow_night.min.js"></script>
 	<script src="https://pagecdn.io/lib/ace/1.4.12/mode-{{script_lang}}.min.js"></script>
+	<script src="https://pagecdn.io/lib/ace/1.4.12/mode-html.min.js"></script>
+
+	
+
 	<style>
 		body {
 			overflow-y: hidden;
+		}
+
+		#controls {
+			padding-bottom: 1%;
+			padding-left: 1%;
 		}
 
 		#suite {
@@ -42,7 +51,14 @@
 </head>
 
 <body>
-	<h1>DIR</h1>
+	<h1 id="is_synced">SYNCED</h1>
+
+	<div id="controls">
+		<button onclick="syncChanges()">Sync</button>
+		<button onclick="restartInstance()">Restart</button>
+		<img id="spinner" style="display:none;max-height:16px;width:64px;" src="https://i.gifer.com/origin/3e/3ef326d43744e0877c24b8c07542a2e7_w200.gif"></img>
+		<a id="port" target="_blank" href="">Instance</a>
+	</div>
 	<div id="suite">
 
 		<div id="tree-container">
@@ -69,32 +85,170 @@
 			return value && JSON.parse(value);
 		}
 
+		function isObjNull(obj) {
+			return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
+		}
+
+		function postAjax(url, data, success = function (data) { console.log(data) }) {
+			$.ajax({
+				url: url,
+				type: "POST",
+				dataType: "json",
+				contentType: "application/json; charset=utf-8",
+				data: JSON.stringify(data),
+				success: success,
+				error: function (xhr, status, error) {
+					console.log(error);
+				},
+			});
+		}
+
+		function syncChanges() {
+			let dirt = localStorage.getObject("mark_dirty");
+			postAjax('/sync_changes', dirt, function (data) {
+				console.log(data);
+				localStorage.setObject("mark_dirty", {});
+				$("#is_synced").text("SYNCED");
+			});
+		}
+
+		function restartInstance() {
+			let user_name = localStorage.getObject("user_name");
+			$("#spinner").show();
+			$("#port").hide();
+			$.ajax({
+				url: '/restart_instance',
+				type: "POST",
+				dataType: "json",
+				contentType: "application/json; charset=utf-8",
+				data: JSON.stringify({ 'user': user_name }),
+				success: function (data) {
+					let instance_url = "http://" + window.location.host + ":" + data.port;
+					localStorage.setObject("instance_url", instance_url);
+					$("#port").attr("href", instance_url);
+				},
+				error: function (xhr, status, error) {
+					console.log(error);
+				},
+				complete: function (data) {
+					$("#spinner").hide();
+					$("#port").show();
+				}
+			});
+		};
+
+
+		localStorage.setObject("user_name", "{{usr}}");
+
+		$(function () {
+			let instance_url = localStorage.getObject("instance_url");
+			if (instance_url) {
+				$("#port").attr("href", instance_url);
+			} else {
+				$(this).text("No instance online");
+			}
+			$("#port").click(function (e) {
+
+				let instance_url = localStorage.getObject("instance_url");
+				if (instance_url) {
+					return;
+				} else {
+					e.preventDefault();
+					$(this).text("No instance online");
+				}
+			});
+		});
+
 		$(function () {
 			$("#tree").fancytree({
+				extensions: ["edit"],
 				skin: "lion",
 				checkbox: false,
-				source:
-					function () {
-						let tcont = localStorage.getItem("tree_content");
-						if (true || (tcont === null)) {
-							return $.ajax({
-								url: "/get_dir",
+				expanded: true,
+				source: function () {
+					let tcont = localStorage.getItem("tree_content");
+					let force_update = JSON.parse(`{{force_update}}`);
+
+					if (force_update || (tcont === null)) {
+						return $.ajax({
+							url: "/get_dir",
+							type: "POST",
+							dataType: "json",
+							contentType: "application/json; charset=utf-8",
+							data: JSON.stringify({ "dir": "{{ app_path }}" }),
+							success: function (data) {
+								localStorage.setObject("tree_content", data);
+								localStorage.setObject("mark_dirty", {});
+								$("#is_synced").text("SYNCED");
+								window.setTimeout(function () {
+									let [url, arg] = window.location.href.split('?');
+									if (url !== window.location.url) {
+										window.location.href = url;
+									}
+								}, 10);
+							},
+						});
+					}
+					if (isObjNull(localStorage.getObject("mark_dirty"))) {
+						$("#is_synced").text("SYNCED");
+					} else {
+						$("#is_synced").text("NOT SYNCED");
+					}
+					return JSON.parse(tcont);
+				},
+				edit: {
+					beforeClose: function (event, data) {
+						window.setTimeout(function () {
+							if (data.node && data.node.title !== '') {
+								let node_path = data.node.parent.key + "/" + data.node.title;
+								data.node.key = node_path;
+								let dirt = localStorage.getObject("mark_dirty");
+								dirt[node_path] = "hello world.";
+								localStorage.setObject("mark_dirty", dirt);
+								let d = data.tree.toDict(true);
+								localStorage.setObject("tree_content", d);
+								$("#is_synced").text("NOT SYNCED");
+							}
+						}, 3);
+					}
+				},
+
+				dblclick: function (event, data) {
+					data.node.editCreateNode("after", {
+						title: "",
+						folder: false
+					});
+				},
+				keydown: function (event, data) {
+					switch (event.which) {
+						case 46: {
+							$.ajax({
+								url: '/rm_file',
 								type: "POST",
 								dataType: "json",
 								contentType: "application/json; charset=utf-8",
-								data: JSON.stringify({ "dir": "{{ app_path }}" }),
-								success: function (data) {
-									localStorage.setObject("tree_content", data);
-									localStorage.setObject("mark_dirty", []);
-								},
+								data: JSON.stringify({ "path": data.node.key }),
+								success: function (ds) {
+									data.node.remove();
+									let d = data.node.tree.toDict(true);
+									localStorage.setObject("tree_content", d);
+								}
+							}).fail(function () {
+
+								let dirt = localStorage.getObject("mark_dirty");
+								delete dirt[data.node.key];
+								localStorage.setObject("mark_dirty", dirt);
+								data.node.remove();
+								let d = data.tree.toDict(true);
+								localStorage.setObject("tree_content", d);
+								if (isObjNull(dirt)) {
+									$("#is_synced").text("SYNCED");
+								}
 							});
+							break;
 						}
-						return JSON.parse(tcont);
-					},
-				init: function (event, data) {
-
+					}
 				},
-
 				activate: function (event, data) {
 					let dkey = data.node.key;
 					if (!data.node.folder) {
@@ -106,13 +260,29 @@
 							dataType: "json",
 							success: function (resp_data) {
 								//editor1.setValue(data.content, -1);
+								let extension = function (dkey_split) {
+									if (dkey_split.length > 1)
+										return dkey_split.pop();
+								}(function (_dkey) {
+									return _dkey.split('.');
+								}(dkey));
 								let session = new EditSession(resp_data.content);
-								session.setMode("ace/mode/{{script_lang}}");
-								session.setUseSoftTabs(true);
+								if (extension in { 'html': 0, 'php': 0 }) {
+									session.setMode("ace/mode/html");
+								}
+								else {
+									session.setMode("ace/mode/{{script_lang}}");
+								}
+								session.setUseSoftTabs(false);
 								session.on("change", function (e) {
+									let doc_txt = session.getDocument().getValue();
 									let dirt = localStorage.getObject("mark_dirty");
-									dirt.push(dkey);
-									console.log(data.node.title);
+
+
+									dirt[dkey] = doc_txt;
+									localStorage.setObject("mark_dirty", dirt);
+									$("#is_synced").text("NOT SYNCED");
+
 								});
 								editor1.setSession(session);
 							},
