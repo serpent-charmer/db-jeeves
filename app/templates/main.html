@@ -2,41 +2,44 @@
 
 
 <head>
-	{% include 'jquery.jinja' %}
-	
+    {% include 'jquery.jinja' %}
+
 
 </head>
 
 <body>
-
-	<div style="padding:5%">
-		<select id="lang">
-			<option value="js">JS</option>
-			<option value="py">PY</option>
-			<option value="php">PHP</option>
-		</select>
-		<button onclick="create()">Create</button>
-		<a target="_blank" href="view_project/new-user-312315fwefg3459?&force=true">View</a>
-	</div>
+    <div style="display:none;" id="current_user">{{current_user.u_token}}</div>
+    <div style="padding:5%">
+        <select id="lang">
+            <option value="javascript">JS</option>
+            <option value="python">PY</option>
+            <option value="php">PHP</option>
+        </select>
+        <button onclick="create()">Create</button>
+        <a target="_blank" href="view_project/{{current_user.identity}}?&force=true">View</a>
+    </div>
 </body>
 <script>
-	function postAjax(url, data, success = function (data) { console.log(data) }) {
-	$.ajax({
-		url: url,
-		type: "POST",
-		dataType: "json",
-		contentType: "application/json; charset=utf-8",
-		data: JSON.stringify(data),
-		success: success,
-		error: function (xhr, status, error) {
-			console.log(error);
-		},
-	});
-}
 
-	function create() {
-		postAjax('create_project', { usr: 'new-user-312315fwefg3459', lang: $('#lang').val() });
-	}
+    
+
+    function postAjax(url, data, success = function (data) { console.log(data) }) {
+        $.ajax({
+            url: url,
+            type: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(data),
+            success: success,
+            error: function (xhr, status, error) {
+                console.log(error);
+            },
+        });
+    }
+
+    function create() {
+        postAjax('create_project', { usr: $("#current_user").text(), lang: $('#lang').val() });
+    }
 </script>
 
 </html>

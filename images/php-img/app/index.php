@@ -6,9 +6,7 @@
 <h1>db test</h1>
 <div>
 <?php
-//$link = mysql_connect('172.18.0.2', 'root', 'my-secret-pw')
-//    or die('Не удалось соединиться: ' . mysql_error());
-$mysqli = new mysqli("mysql-db", "root", "my-secret-pw", "mysql");
+$mysqli = new mysqli("mysql-db", getenv("DB_LOGIN"), getenv("DB_PWD"), getenv("DB_NAME"));
 if ($mysqli->connect_errno) {
     echo "Не удалось подключиться к MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
 } else {

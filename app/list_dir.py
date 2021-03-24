@@ -1,6 +1,12 @@
 import os
 from os.path import isfile, isdir
+from . import langs
 
+def map_lang_dir(lang, path):
+    if lang == langs.PY:
+        return os.path.join(path, 'app')
+    else:
+        return path
 
 def list_dir(path='.'):
     owd = path
@@ -11,9 +17,11 @@ def list_dir(path='.'):
 
 def dir_structure(path='.'):
     rs = []
-    py_path = os.path.join(path, 'app')
-    if(os.path.exists(py_path)):
-        path = py_path
+    #py_path = os.path.join(path, 'app')
+    #if(os.path.exists(py_path)):
+    #    print('python app')
+    #    path = py_path
+    #print(path)
     if(os.path.exists(path)):
         for f in sorted(os.listdir(path)):
             pf = os.path.join(path, f)

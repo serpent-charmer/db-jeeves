@@ -9,9 +9,9 @@ app.get('/', function(req, res) {
 
 const connection = mysql.createConnection({
   host: "mysql-db",
-  user: "root",
-  database: "mysql",
-  password: "my-secret-pw"
+  user: process.env.DB_LOGIN,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PWD"
 });
 connection.connect(function(err){
     if (err) {

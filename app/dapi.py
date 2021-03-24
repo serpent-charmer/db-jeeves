@@ -8,6 +8,7 @@ from distutils.dir_util import copy_tree, remove_tree, create_tree
 
 
 DEFAULT_PORT = 8000
+MY_SQL_IP = '10.11.3.3'
 
 def copy_new_img(path, new_path):
     u_path = os.path.join('users', new_path)
@@ -38,7 +39,6 @@ def build_custom_img(path, name):
 
     client = docker.from_env()
     img = client.images.build(path=path, tag=name)
-    #print(img)
 
     container_name = 'container-'+name
 
@@ -48,10 +48,13 @@ def build_custom_img(path, name):
     except:
         pass
 
-    container = client.containers.create(name,
-                                         name=container_name,
-                                         extra_hosts={"mysql-db": '10.11.3.3'},
-                                         network='db_network', detach=True, ports={DEFAULT_PORT: None})
+    container = client.containers.create(name, \
+                                         name=container_name, \
+                                         extra_hosts={"mysql-db": '10.11.3.3'}, \
+                                         network='db_network', \
+                                         detach=True, \
+                                         ports={DEFAULT_PORT: None}, \
+                                         environment=['DB_LOGIN=%s' % name, 'DB_PWD=abc', 'DB_NAME=%s' % ("database-"+name)])
 
     container.start()
     container.reload()
@@ -60,6 +63,7 @@ def build_custom_img(path, name):
     client.close()
 
     return container
+
 
 def get_container_logs(name):
     container_name = 'container-'+name
@@ -72,8 +76,10 @@ def get_container_logs(name):
 
     return container.logs().decode(encoding='utf-8')
 
+
 def get_container_port(container):
     return container.ports['%d/tcp' % DEFAULT_PORT][0]['HostPort']
+
 
 if __name__ == '__main__':
     nm = 'new-user-312315fwefg3453'
