@@ -5,7 +5,7 @@ RUN curl -L https://npmjs.org/install.sh | sh
 
 WORKDIR /app
 
-RUN npm install express mysql2 --save
+RUN npm install express mysql2 ejs --save
 
 COPY ./app  .
 

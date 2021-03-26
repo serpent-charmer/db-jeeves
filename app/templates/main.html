@@ -2,26 +2,50 @@
 
 
 <head>
+
+
+    <title>DB Jeeves</title>
+
     {% include 'jquery.jinja' %}
 
+    <style>
+        body {
+            margin: 0px;
+            background-color: rgb(235, 203, 175);
+        }
 
+        #main-container {
+            background-color: rgb(255, 242, 230);
+            height: 100%;
+            margin-left: 5%;
+            margin-right: 5%;
+        }
+    </style>
 </head>
 
 <body>
-    <div style="display:none;" id="current_user">{{current_user.u_token}}</div>
-    <div style="padding:5%">
-        <select id="lang">
-            <option value="javascript">JS</option>
-            <option value="python">PY</option>
-            <option value="php">PHP</option>
-        </select>
-        <button onclick="create()">Create</button>
-        <a target="_blank" href="view_project/{{current_user.identity}}?&force=true">View</a>
+    <div id="main-container">
+        <div align="center">
+            <br>
+            <h1>DB Jeeves</h1>
+            <h3>Write WebCode, forget DevOps!</h3>
+            <div id="main" style="padding: 0% 5% 5% 5%;">
+                <select id="lang">
+                    <option value="javascript">JS</option>
+                    <option value="python">PY</option>
+                    <option value="php">PHP</option>
+                </select>
+                <button onclick="create()">Create</button>
+                <div style="margin-top:1%;"><a target="_blank" href="/view_project?&force=true">View</a></div>
+                <div id="status" style="margin-top:1%;display:none">Ready!</div>
+            </div>
+
+        </div>
     </div>
 </body>
 <script>
 
-    
+
 
     function postAjax(url, data, success = function (data) { console.log(data) }) {
         $.ajax({
@@ -38,7 +62,10 @@
     }
 
     function create() {
-        postAjax('create_project', { usr: $("#current_user").text(), lang: $('#lang').val() });
+        postAjax('create_project', { lang: $('#lang').val() },
+            function (data) {
+                $("#status").show();
+            });
     }
 </script>
 

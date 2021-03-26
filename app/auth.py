@@ -22,8 +22,9 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Пароль', validators=[DataRequired()])
 
 class User(UserMixin):
-    def __init__(self, identity):
+    def __init__(self, identity, nickname):
         self.identity = identity
+        self.nickname = nickname
 
 def get_blueprint():
     auth_bp = Blueprint('register_bp', __name__,
@@ -33,6 +34,10 @@ def get_blueprint():
     login_manager = LoginManager()
     login_manager.init_app(current_app)
 
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        return redirect('/register')
+
     @login_manager.user_loader
     def load_user(login):
         conn = users.get_connection()
@@ -40,13 +45,13 @@ def get_blueprint():
         with conn:
             with conn.cursor() as cursor:
             
-                sql = 'select login, identity from db_jeeves.USER where login = %s'
+                sql = 'select login, identity, nickname from db_jeeves.USER where login = %s'
                 cursor.execute(sql, (login))
                 id = cursor.fetchone()
                 
         
         if id:
-            mu = User(id['identity'])
+            mu = User(id['identity'], id['nickname'])
             mu.id = id['login']
             return mu
             
@@ -68,7 +73,7 @@ def get_blueprint():
                     cursor.execute('INSERT INTO db_jeeves.USER VALUES(%s, %s, %s, %s)', (login, password, nickname, identity))
                     conn.commit()
 
-                    mu = User(identity)
+                    mu = User(identity, nickname)
                     mu.id = login
                     login_user(mu)
 
@@ -102,10 +107,10 @@ def get_blueprint():
 
             with conn:
                 with conn.cursor() as cursor:
-                    cursor.execute('SELECT login, identity FROM db_jeeves.USER where login = %s and password = %s', (login, password))
+                    cursor.execute('SELECT login, identity, nickname FROM db_jeeves.USER where login = %s and password = %s', (login, password))
                     id = cursor.fetchone()
                     if id:
-                        mu = User(id['identity'])
+                        mu = User(id['identity'], id['nickname'])
                         mu.id = login
                         login_user(mu)
                         return redirect('/')

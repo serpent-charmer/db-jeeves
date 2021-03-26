@@ -3,13 +3,14 @@ import pymysql.cursors
 from flask import Flask, render_template
 
 
-
-connection = pymysql.connect(host='mysql-db',
-                             user=os.environ.get('DB_LOGIN'),
-                             password=os.environ.get('DB_PWD'),
-                             database=os.environ.get('DB_NAME'),
-                             charset='utf8mb4',
-                             cursorclass=pymysql.cursors.DictCursor)
+def get_connection():
+    connection = pymysql.connect(host='mysql-db',
+                                user=os.environ.get('DB_LOGIN'),
+                                password=os.environ.get('DB_PWD'),
+                                database=os.environ.get('DB_NAME'),
+                                charset='utf8mb4',
+                                cursorclass=pymysql.cursors.DictCursor)
+    return connection
 
 
 def create_app():
@@ -17,6 +18,8 @@ def create_app():
 
     @app.route('/')
     def hello_world():
+
+        connection = get_connection()
 
         with connection:
             with connection.cursor() as cursor:

@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, session, render_template, jsonify, request, redirect, session, current_app
+from flask import Flask, session, render_template, jsonify, request, redirect, session, current_app, send_from_directory
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from distutils.dir_util import remove_tree
 from . import dapi, list_dir, langs, users
@@ -16,10 +16,15 @@ def get_app():
         app.register_blueprint(schemes.get_blueprint())
         app.register_blueprint(auth.get_blueprint())
 
+    @app.route('/favicon.ico', methods=['GET'])
+    def favicon():
+        return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico')
+
     @app.route('/', methods=['GET'])
     @login_required
     def main():
         return render_template('main.html')
+        
 
     @app.route('/sync_changes', methods=['POST'])
     def sync_changes():
@@ -27,7 +32,6 @@ def get_app():
             return '', 404
         for entr in request.json.items():
             dpath, changed = entr
-            print(dpath, changed)
             with open(dpath, 'w+') as f:
                 f.write(changed)
         return jsonify(['ok'])
@@ -35,31 +39,43 @@ def get_app():
     @app.route('/restart_instance', methods=['POST'])
     def restart_instance():
         if request and request.json.get('user'):
+
             nm = request.json['user']
             container = dapi.build_custom_img(os.path.join('users', nm), nm)
             port = dapi.get_container_port(container)
+
+
+            conn = users.get_connection()
+
+            with conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('UPDATE db_jeeves.PROJECT SET last_port=%s where ref_identity=%s', (port, nm))
+                    conn.commit()
+
             return jsonify({'port': port})
         return '', 404
 
-    @app.route('/view_project')
-    def view_your_project():
-        identity = current_user.u_token
+    @app.route('/view_project/<string:identity>', methods=['GET'])
+    def view_project_ref(identity):
+
+        last_port = None
 
         conn = users.get_connection()
 
         with conn:
             with conn.cursor() as cursor:
-                cursor.execute(
-                    'select * from db_jeeves.PROJECT where ref_identity = %s', (identity))
-                project = cursor.fetchone()
+                cursor.execute('SELECT last_port FROM db_jeeves.PROJECT where ref_identity=%s', (identity))
+                last_port_tuple = cursor.fetchone()
+                last_port = (last_port_tuple and last_port_tuple.get('last_port')) or None
 
-                if project:
-                    redirect('/view_project/' + identity)
+        if last_port:
+            host_ip = request.host.split(":")[0]
+            return redirect('http://' + host_ip + ':' + str(last_port))
+        else:
+            return '<h1>Not Found<h1><h2>No project hosted for this user</h2>'
 
-        return redirect('/')
-
-    @app.route('/view_project/<string:user_name>', methods=['GET'])
-    def view_project(user_name):
+    @app.route('/view_project', methods=['GET'])
+    def view_project():
         force_update = 'false'
         if request.args:
             if request.args.get('force'):
@@ -100,7 +116,7 @@ def get_app():
                 with conn.cursor() as cursor:
                     try:
                         cursor.execute(
-                        'insert into db_jeeves.PROJECT values(%s, %s)', (identity, lang))
+                        'insert into db_jeeves.PROJECT values(%s, %s, %s)', (identity, lang, None))
                         conn.commit()
                     except:
                         cursor.execute(
@@ -132,10 +148,12 @@ def get_app():
             return jsonify({'content': f_text})
         return 'No such file', 404
 
-    @ app.route('/get_logs/<string:user_name>', methods=['GET'])
-    def get_logs(user_name):
-        # return jsonify(dict({"logs" : dapi.get_container_logs(user_name)}))
-        return "<p>" + dapi.get_container_logs(user_name).replace("\n", "<br>").replace(" ", "&nbsp;") + "</p>"
+    @ app.route('/get_logs', methods=['GET'])
+    def get_logs():
+        identity = current_user.identity
+        log = dapi.get_container_logs(identity)
+        log = log.replace("\n", "<br>").replace(" ", "&nbsp;")
+        return render_template('logs.html', log=log)
 
     @ app.route('/rm_file', methods=['GET', 'POST'])
     def rm_file():
