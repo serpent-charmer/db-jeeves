@@ -49,7 +49,7 @@
         #tree-container {
             overflow-y: none;
             min-width: 15%;
-            max-height:95%;
+            max-height: 95%;
         }
 
         #tree {
@@ -72,9 +72,8 @@
 
         .fancytree-container {
             background-color: #e8e8e8 !important;
-            height:100%;
+            height: 100%;
         }
-
     </style>
 </head>
 
@@ -111,10 +110,7 @@
     </div>
 
     <script>
-        let editor1 = ace.edit("editor");
-        editor1.setTheme("ace/theme/kuroir");
-        editor1.setFontSize(15);
-        editor1.session.setValue("Pick a node to start working!\nDouble click item to add node;\nSelect node and press Del to delete it.");
+
         let EditSession = require("ace/edit_session").EditSession;
 
         Storage.prototype.setObject = function (key, value) {
@@ -128,6 +124,34 @@
 
         function isObjNull(obj) {
             return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
+        }
+
+        function initSession(dkey, content) {
+            let extension = function (dkey_split) {
+                if (dkey_split.length > 1)
+                    return dkey_split.pop();
+            }(function (_dkey) {
+                return _dkey.split('.');
+            }(dkey));
+
+            let session = new EditSession(content);
+            if (extension === 'html') {
+                session.setMode("ace/mode/html");
+            } else if (extension === 'php') {
+                session.setMode("ace/mode/php");
+            }
+            else {
+                session.setMode("ace/mode/{{script_lang}}");
+            }
+            session.setUseSoftTabs(true);
+            session.on("change", function (e) {
+                let doc_txt = session.getDocument().getValue();
+                setKeyAndSaveMarked(dkey, doc_txt);
+                setKeyAndSaveCached(dkey, doc_txt);
+                $("#is-synced").text("NOT SYNCED");
+            });
+
+            return session;
         }
 
         function copyToClipboard(textToCopy) {
@@ -154,11 +178,11 @@
         }
 
         function share() {
-            copyToClipboard(window.location.host+"/view_project/{{current_user.identity}}")
-                .then(function(){
+            copyToClipboard(window.location.host + "/view_project/{{current_user.identity}}")
+                .then(function () {
                     alert("Link copied to clipboard.");
                 })
-                .catch(function(){});
+                .catch(function () { });
         }
 
         function postAjax(url, data, success = function (data) { console.log(data) }) {
@@ -194,7 +218,8 @@
                 contentType: "application/json; charset=utf-8",
                 data: JSON.stringify({ 'user': user_name }),
                 success: function (data) {
-                    let instance_url = "http://" + window.location.host + ":" + data.port;
+                    let [ip, _] = window.location.host.split(":");
+                    let instance_url = "http://" + ip + ":" + data.port;
                     localStorage.setObject("instance_url", instance_url);
                     $("#port").attr("href", instance_url);
                 },
@@ -208,10 +233,34 @@
             });
         };
 
+        function getMarked() {
+            let dirt = localStorage.getObject("mark_dirty");
+            return dirt;
+        }
 
-        localStorage.setObject("user_name", "{{current_user.identity}}");
+        function setKeyAndSaveMarked(key, value) {
+            let dirt = getMarked();
+            dirt[key] = value;
+            localStorage.setObject("mark_dirty", dirt);
+        }
+
+        function getCached() {
+            let cached = localStorage.getObject("mark_cached");
+            return cached;
+        }
+
+        function setKeyAndSaveCached(key, value) {
+            let cached = getCached();
+            cached[key] = value;
+            localStorage.setObject("mark_cached", cached);
+        }
+
+
 
         $(function () {
+
+            localStorage.setObject("user_name", "{{current_user.identity}}");
+
             let instance_url = localStorage.getObject("instance_url");
             if (instance_url) {
                 $("#port").attr("href", instance_url);
@@ -228,9 +277,21 @@
                     $(this).text("No instance online");
                 }
             });
-        });
 
-        $(function () {
+            let editor1 = ace.edit("editor");
+            editor1.setTheme("ace/theme/kuroir");
+            editor1.setFontSize(15);
+            let last_edited = localStorage.getObject("last_edited");
+            if (last_edited) {
+                let cached = getCached();
+                let session = initSession(last_edited, cached[last_edited]);
+                editor1.setSession(session);
+            } else {
+                editor1.session.setValue("Pick a node to start working!\nDouble click item to add node;\nSelect node and press Del to delete it.");
+
+            }
+
+
             $("#tree").fancytree({
                 extensions: ["edit"],
                 skin: "lion",
@@ -250,6 +311,8 @@
                             success: function (data) {
                                 localStorage.setObject("tree_content", data);
                                 localStorage.setObject("mark_dirty", {});
+                                localStorage.setObject("mark_cached", {});
+                                localStorage.setObject("last_edited", null);
                                 $("#is-synced").text("SYNCED");
                                 window.setTimeout(function () {
                                     let [url, arg] = window.location.href.split('?');
@@ -273,9 +336,9 @@
                             if (data.node && data.node.title !== '') {
                                 let node_path = data.node.parent.key + "/" + data.node.title;
                                 data.node.key = node_path;
-                                let dirt = localStorage.getObject("mark_dirty");
-                                dirt[node_path] = "hello world.";
-                                localStorage.setObject("mark_dirty", dirt);
+
+                                setKeyAndSaveMarked(node_path, "hello world");
+
                                 let d = data.tree.toDict(true);
                                 localStorage.setObject("tree_content", d);
                                 $("#is-synced").text("NOT SYNCED");
@@ -308,6 +371,7 @@
                                 let dirt = localStorage.getObject("mark_dirty");
                                 delete dirt[data.node.key];
                                 localStorage.setObject("mark_dirty", dirt);
+
                                 data.node.remove();
                                 let d = data.tree.toDict(true);
                                 localStorage.setObject("tree_content", d);
@@ -323,21 +387,14 @@
                     let dkey = data.node.key;
                     if (!data.node.folder) {
 
-                        let dirt = localStorage.getObject("mark_dirty");
+                        localStorage.setObject("last_edited", dkey);
+
+                        let dirt = getCached();
 
                         let editing = dirt[dkey];
 
                         if (editing) {
-                            let session = new EditSession(editing);
-                            session.setMode("ace/mode/{{script_lang}}");
-                            session.setUseSoftTabs(false);
-                            session.on("change", function (e) {
-                                let doc_txt = session.getDocument().getValue();
-                                let dirt = localStorage.getObject("mark_dirty");
-                                dirt[dkey] = doc_txt;
-                                localStorage.setObject("mark_dirty", dirt);
-                                $("#is-synced").text("NOT SYNCED");
-                            });
+                            let session = initSession(dkey, editing);
                             editor1.setSession(session);
                             return;
                         }
@@ -349,33 +406,8 @@
                             data: JSON.stringify({ "path": dkey }),
                             dataType: "json",
                             success: function (resp_data) {
-                                //editor1.setValue(data.content, -1);
-                                let extension = function (dkey_split) {
-                                    if (dkey_split.length > 1)
-                                        return dkey_split.pop();
-                                }(function (_dkey) {
-                                    return _dkey.split('.');
-                                }(dkey));
-                                let session = new EditSession(resp_data.content);
-                                if (extension === 'html') {
-                                    session.setMode("ace/mode/html");
-                                } else if (extension === 'php') {
-                                    session.setMode("ace/mode/php");
-                                }
-                                else {
-                                    session.setMode("ace/mode/{{script_lang}}");
-                                }
-                                session.setUseSoftTabs(true);
-                                session.on("change", function (e) {
-                                    let doc_txt = session.getDocument().getValue();
-                                    let dirt = localStorage.getObject("mark_dirty");
-
-
-                                    dirt[dkey] = doc_txt;
-                                    localStorage.setObject("mark_dirty", dirt);
-                                    $("#is-synced").text("NOT SYNCED");
-
-                                });
+                                setKeyAndSaveCached(dkey, resp_data.content);
+                                let session = initSession(dkey, resp_data.content);
                                 editor1.setSession(session);
                             },
                             error: function (xhr, status, error) {

@@ -9,8 +9,8 @@ from .dapi import MY_SQL_IP
 def get_connection(db_user, db_name, pwd='abc'):
     connection = pymysql.connect(host=MY_SQL_IP,
                                  user=db_user,
-                                 password=pwd,
                                  db=db_name,
+                                 password=pwd,
                                  charset='utf8mb4',
                                  client_flag=CLIENT.MULTI_STATEMENTS,
                                  cursorclass=pymysql.cursors.DictCursor)
@@ -20,6 +20,16 @@ def get_connection(db_user, db_name, pwd='abc'):
 def get_root_connection():
     connection = pymysql.connect(host=MY_SQL_IP,
                                  user='root',
+                                 password='my-secret-pw',
+                                 charset='utf8mb4',
+                                 client_flag=CLIENT.MULTI_STATEMENTS,
+                                 cursorclass=pymysql.cursors.DictCursor)
+    return connection
+
+def get_test_root_connection():
+    connection = pymysql.connect(host=MY_SQL_IP,
+                                 user='root',
+                                 database='test',
                                  password='my-secret-pw',
                                  charset='utf8mb4',
                                  client_flag=CLIENT.MULTI_STATEMENTS,
@@ -46,12 +56,14 @@ def get_blueprint():
             dname = 'database-{}'.format(identity)
 
             connection = get_connection(identity, dname)
+            try:
+                with connection:
+                    with connection.cursor() as cursor:
 
-            with connection:
-                with connection.cursor() as cursor:
-
-                    cursor.execute(request.json['sql'])
-                    sql_rs = cursor.fetchall()
+                        cursor.execute(request.json['sql'])
+                        sql_rs = cursor.fetchall()
+            except Exception as e:
+                return str(e), 400
 
             return jsonify(sql_rs)
 

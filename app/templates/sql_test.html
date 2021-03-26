@@ -17,7 +17,7 @@
     <style>
         body {
             margin: 0px;
-            overflow-y: hidden;
+            overflow-y: scroll;
             background-color: rgb(235, 203, 175);
         }
 
@@ -47,6 +47,7 @@
 
         <div id="padded-container">
             <h1 id="sql-status">Run some SQL</h1>
+            <p id="sql-status-desc">Waiting for input...</p>
             <div style="margin-top:4%;margin-bottom:5%">
                 <div id="editor"></div>
             </div>
@@ -126,6 +127,7 @@
             exec: function (editor) {
                 runSql(function (data) {
                     $("#sql-status").text("Ok");
+                    $("#sql-status-desc").text("Nothing");
                     if (data) {
                         let columns = Object.keys(data[0]).map(function (i) { return { 'title': i, 'field': i } });
 
@@ -139,7 +141,8 @@
                     }
 
                 }, function (xhr, status, error) {
-                    $("#sql-status").text(error);
+                    $("#sql-status").text("Err");
+                    $("#sql-status-desc").text(xhr.responseText);
                 });
             }
         });
