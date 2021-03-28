@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, request, current_app, render_template, redirect
+from flask import Blueprint, request, current_app, render_template, redirect, url_for
 from flask_wtf import FlaskForm
 from wtforms import PasswordField
 from wtforms.widgets import TextInput, Input
@@ -27,7 +27,7 @@ class User(UserMixin):
         self.nickname = nickname
 
 def get_blueprint():
-    auth_bp = Blueprint('register_bp', __name__,
+    auth_bp = Blueprint('auth_bp', __name__,
                        template_folder='templates',
                        static_folder='static')
 
@@ -36,7 +36,7 @@ def get_blueprint():
 
     @login_manager.unauthorized_handler
     def unauthorized():
-        return redirect('/register')
+        return redirect(url_for('.register'))
 
     @login_manager.user_loader
     def load_user(login):
@@ -64,7 +64,7 @@ def get_blueprint():
         if request.method == 'POST' and form.validate():
             login, password, nickname = form.login.data, form.password.data, form.nickname.data
         
-            identity = "new-user-"+urlsafe_b64encode(os.urandom(6)).decode().lower()
+            identity = urlsafe_b64encode(os.urandom(6)).decode().lower()
 
             conn = users.get_connection()
 
@@ -77,7 +77,7 @@ def get_blueprint():
                     mu.id = login
                     login_user(mu)
 
-            dname = 'database-{}'.format(identity)
+            dname = '{}db'.format(identity)
             schema_sql = '''
             START TRANSACTION;
             CREATE USER '{0}' IDENTIFIED WITH mysql_native_password BY 'abc';
@@ -93,7 +93,7 @@ def get_blueprint():
                     cursor.execute(schema_sql)
                     conn.commit()
                     
-            return redirect('/')
+            return redirect(url_for('main'))
 
         return render_template('register.html', form=form)
 
@@ -113,13 +113,13 @@ def get_blueprint():
                         mu = User(id['identity'], id['nickname'])
                         mu.id = login
                         login_user(mu)
-                        return redirect('/')
+                        return redirect(url_for('main'))
 
         return render_template('login.html', form=form)
 
     @auth_bp.route('/logout', methods=['GET', 'POST'])
     def logout():
         logout_user()
-        return redirect('/')
+        return redirect(url_for('.register'))
     
     return auth_bp

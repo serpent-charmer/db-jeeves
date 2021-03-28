@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, session, render_template, jsonify, request, redirect, session, current_app, send_from_directory
+from flask import Flask, session, render_template, url_for, jsonify, request, redirect, session, current_app, send_from_directory
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from distutils.dir_util import remove_tree
 from . import dapi, list_dir, langs, users
@@ -24,7 +24,6 @@ def get_app():
     @login_required
     def main():
         return render_template('main.html')
-        
 
     @app.route('/sync_changes', methods=['POST'])
     def sync_changes():
@@ -44,12 +43,12 @@ def get_app():
             container = dapi.build_custom_img(os.path.join('users', nm), nm)
             port = dapi.get_container_port(container)
 
-
             conn = users.get_connection()
 
             with conn:
                 with conn.cursor() as cursor:
-                    cursor.execute('UPDATE db_jeeves.PROJECT SET last_port=%s where ref_identity=%s', (port, nm))
+                    cursor.execute(
+                        'UPDATE db_jeeves.PROJECT SET last_port=%s where ref_identity=%s', (port, nm))
                     conn.commit()
 
             return jsonify({'port': port})
@@ -64,9 +63,11 @@ def get_app():
 
         with conn:
             with conn.cursor() as cursor:
-                cursor.execute('SELECT last_port FROM db_jeeves.PROJECT where ref_identity=%s', (identity))
+                cursor.execute(
+                    'SELECT last_port FROM db_jeeves.PROJECT where ref_identity=%s', (identity))
                 last_port_tuple = cursor.fetchone()
-                last_port = (last_port_tuple and last_port_tuple.get('last_port')) or None
+                last_port = (last_port_tuple and last_port_tuple.get(
+                    'last_port')) or None
 
         if last_port:
             host_ip = request.host.split(":")[0]
@@ -90,9 +91,16 @@ def get_app():
                     'select lang from db_jeeves.PROJECT where ref_identity = %s', identity)
                 sql_rs = cursor.fetchone()
 
-        lang, pth = sql_rs['lang'], os.path.join('users', identity, 'app')
+        lang, pth = sql_rs and sql_rs['lang'], os.path.join('users', identity, 'app')
+
+        if not lang:
+            return '<h1>Not Found<h1><h2>No project created for this user</h2>'
+
+        has_diagram = os.path.exists(os.path.join(
+            os.getcwd(), 'users', identity, identity+".pdf"))
 
         return render_template('index.html',
+                               has_diagram=has_diagram,
                                force_update=force_update,
                                script_lang=lang,
                                app_path=list_dir.map_lang_dir(lang, pth))
@@ -116,15 +124,29 @@ def get_app():
                 with conn.cursor() as cursor:
                     try:
                         cursor.execute(
-                        'insert into db_jeeves.PROJECT values(%s, %s, %s)', (identity, lang, None))
+                            'insert into db_jeeves.PROJECT values(%s, %s, %s)', (identity, lang, None))
                         conn.commit()
                     except:
                         cursor.execute(
-                        'update db_jeeves.PROJECT set lang=%s where ref_identity=%s', (lang, identity))
+                            'update db_jeeves.PROJECT set lang=%s where ref_identity=%s', (lang, identity))
                         conn.commit()
 
+            return jsonify('ok')
 
-            return jsonify(['ok'])
+    @app.route('/get_diagram', methods=['GET'])
+    def get_diagram():
+        os.system('''
+        schemacrawler --server=mysql --database="{0}db" -schemas=."{0}db"..dbo \
+        --host={1} --user={0} --password=abc --info-level=maximum \
+        -c=schema --output-format=pdf -o=users/{0}/{0}.pdf "$*"
+        '''.format(current_user.identity, dapi.MY_SQL_IP))
+        return redirect(url_for('.view_diagram'))
+
+    @app.route('/view_diagram', methods=['GET'])
+    def view_diagram():
+        identity = current_user.identity
+        pth = os.path.join(os.getcwd(), 'users', identity)
+        return send_from_directory(pth, identity+".pdf")
 
     @app.route('/get_dir', methods=['GET', 'POST'])
     def get_dir():
@@ -151,8 +173,12 @@ def get_app():
     @ app.route('/get_logs', methods=['GET'])
     def get_logs():
         identity = current_user.identity
-        log = dapi.get_container_logs(identity)
-        log = log.replace("\n", "<br>").replace(" ", "&nbsp;")
+        log = None
+        try :
+            log = dapi.get_container_logs(identity)
+        except:
+            pass
+        log = (log and log.replace("\n", "<br>").replace(" ", "&nbsp;")) or "Container offline"
         return render_template('logs.html', log=log)
 
     @ app.route('/rm_file', methods=['GET', 'POST'])

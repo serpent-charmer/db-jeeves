@@ -46,14 +46,13 @@ def get_blueprint():
     def edit_sql():
         return render_template('sql_test.html')
 
-
     @schemes_bp.route('/run_sql', methods=['POST'])
     def run_sql():
 
         if request and request.json.get('sql'):
 
             identity = current_user.identity
-            dname = 'database-{}'.format(identity)
+            dname = '{}db'.format(identity)
 
             connection = get_connection(identity, dname)
             try:

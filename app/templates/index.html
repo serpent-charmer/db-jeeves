@@ -85,13 +85,22 @@
                 <div>Made by: {{current_user.nickname}}</div>
                 <div style="margin-top:1%;"><button onclick="share()">Share</button></div>
             </div>
+            <div style="margin-bottom:1%;">
+                <a href="/">Back</a>
+            </div>
             <div id="is-synced">SYNCED</div>
 
             <div id="controls" style="padding:0px;margin-top:1%;margin-bottom:1%;">
                 <button onclick="syncChanges()">Sync</button>
                 <button onclick="restartInstance()">Restart</button>
-                <a target="_blank" href="/get_logs">Logs</a>
-                <a target="_blank" href="/edit_sql">SQL</a>
+                <a href="/get_logs">Logs</a>
+                <a href="/edit_sql">SQL</a>
+                {% if has_diagram %}
+                    <a target="_blank" href="/view_diagram">Diagram</a>
+                    <a target="_blank" href="/get_diagram">(Redo)</a>
+                {% else %}
+                    <a target="_blank" href="/get_diagram">Create diagram</a>
+                {% endif %}
                 <img id="spinner" style="display:none;max-height:16px;width:64px;"
                     src="https://i.gifer.com/origin/3e/3ef326d43744e0877c24b8c07542a2e7_w200.gif"></img>
                 <a id="port" target="_blank" href="">Instance</a>

@@ -25,6 +25,9 @@
 
 <body>
     <div id="main-container">
+        <div style="padding-left:5%;padding-top:5%;">
+            <a href="/logout">Logout</a>
+        </div>
         <div align="center">
             <br>
             <h1>DB Jeeves</h1>
@@ -36,7 +39,7 @@
                     <option value="php">PHP</option>
                 </select>
                 <button onclick="create()">Create</button>
-                <div style="margin-top:1%;"><a target="_blank" href="/view_project?&force=true">View</a></div>
+                <div style="margin-top:1%;"><a target="_blank" href="/view_project">View</a></div>
                 <div id="status" style="margin-top:1%;display:none">Ready!</div>
             </div>
 
@@ -64,7 +67,7 @@
     function create() {
         postAjax('create_project', { lang: $('#lang').val() },
             function (data) {
-                $("#status").show();
+                window.location = "/view_project?&force=true";
             });
     }
 </script>

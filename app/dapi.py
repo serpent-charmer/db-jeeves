@@ -54,7 +54,7 @@ def build_custom_img(path, name):
                                          network='db_network', \
                                          detach=True, \
                                          ports={DEFAULT_PORT: None}, \
-                                         environment=['DB_LOGIN=%s' % name, 'DB_PWD=abc', 'DB_NAME=%s' % ("database-"+name)])
+                                         environment=['DB_LOGIN=%s' % name, 'DB_PWD=abc', 'DB_NAME=%s' % (name+"db")])
 
     container.start()
     container.reload()
