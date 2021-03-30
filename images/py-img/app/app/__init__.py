@@ -1,6 +1,6 @@
 import os
 import pymysql.cursors
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 
 
 def get_connection():
@@ -19,12 +19,12 @@ def create_app():
     @app.route('/')
     def hello_world():
 
-        connection = get_connection()
+        # connection = get_connection()
 
-        with connection:
-            with connection.cursor() as cursor:
-                cursor.execute('SHOW DATABASES')
-                print(cursor.fetchall())
+        # with connection:
+        #     with connection.cursor() as cursor:
+        #         cursor.execute('SHOW DATABASES')
+        #         rs = jsonify(cursor.fetchall())
 
 
         return render_template('index.html')

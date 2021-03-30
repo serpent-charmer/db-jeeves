@@ -1,10 +1,13 @@
-FROM debian:stable
+FROM debian:latest
 RUN apt-get update 
-RUN apt-get -y install wget gnupg
-RUN wget -q https://packages.sury.org/php/apt.gpg -O- | apt-key add - 
-RUN echo "deb https://packages.sury.org/php/ buster main" | tee /etc/apt/sources.list.d/php.list
+RUN apt-get install -y lsb-release apt-transport-https ca-certificates wget
+#RUN apt-get -y install wget gnupg
+#RUN wget -q https://packages.sury.org/php/apt.gpg -O- | apt-key add - 
+#RUN echo "deb https://packages.sury.org/php/ buster main" | tee /etc/apt/sources.list.d/php.list
+RUN wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
+RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/php.list
 RUN apt-get update
-RUN apt-get -y install php8.0 php8.0-fpm php8.0-mysql nginx
+RUN apt-get -y install libpq-dev php8.0 php8.0-fpm php8.0-pgsql php8.0-mysql nginx
 
 #WORKDIR /myapp
 

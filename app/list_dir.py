@@ -17,11 +17,6 @@ def list_dir(path='.'):
 
 def dir_structure(path='.'):
     rs = []
-    #py_path = os.path.join(path, 'app')
-    #if(os.path.exists(py_path)):
-    #    print('python app')
-    #    path = py_path
-    #print(path)
     if(os.path.exists(path)):
         for f in sorted(os.listdir(path)):
             pf = os.path.join(path, f)

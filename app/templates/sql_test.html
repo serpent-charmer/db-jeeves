@@ -49,6 +49,7 @@
             <div style="margin-bottom:1%;">
                 <a href="/view_project">Back</a>
             </div>
+            <p>Vendor: {{current_user.vendor}}</p>
             <h1 id="sql-status">Run some SQL</h1>
             <p id="sql-status-desc">Waiting for input...</p>
             <div style="margin-top:4%;margin-bottom:5%">
@@ -133,14 +134,14 @@
                     $("#sql-status-desc").text("Nothing");
                     if (data) {
                         let columns = Object.keys(data[0]).map(function (i) { return { 'title': i, 'field': i } });
-
                         let table = new Tabulator("#sql-result", {
                             layout: "fitColumns",
                             data: data,
                             columns: columns
                         });
-
                         localStorage.setObject("sql_result", { 'data': data, 'columns': columns });
+                    } else {
+                        $("#sql-result").hide();
                     }
 
                 }, function (xhr, status, error) {

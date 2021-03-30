@@ -1,0 +1,1 @@
+docker run --ip=10.11.3.4 --network db_network --name some-postgres -e POSTGRES_PASSWORD=my-secret-pw -d postgres

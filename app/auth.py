@@ -10,7 +10,7 @@ from flask_login import LoginManager, UserMixin, login_required, login_user, log
 from uuid import uuid4
 from base64 import urlsafe_b64encode
 
-from . import users, schemes
+from . import users, schemes, schemes_pg
 
 class LoginForm(FlaskForm):
     login = TextField('Логин', validators=[DataRequired()])
@@ -25,6 +25,7 @@ class User(UserMixin):
     def __init__(self, identity, nickname):
         self.identity = identity
         self.nickname = nickname
+        self.vendor = None
 
 def get_blueprint():
     auth_bp = Blueprint('auth_bp', __name__,
@@ -36,7 +37,7 @@ def get_blueprint():
 
     @login_manager.unauthorized_handler
     def unauthorized():
-        return redirect(url_for('.register'))
+        return redirect(url_for('auth_bp.register'))
 
     @login_manager.user_loader
     def load_user(login):
@@ -47,13 +48,21 @@ def get_blueprint():
             
                 sql = 'select login, identity, nickname from db_jeeves.USER where login = %s'
                 cursor.execute(sql, (login))
-                id = cursor.fetchone()
+                sql_id = cursor.fetchone()
                 
-        
-        if id:
-            mu = User(id['identity'], id['nickname'])
-            mu.id = id['login']
-            return mu
+            if sql_id:
+                login, identity, nickname = sql_id.values()
+
+                with conn.cursor() as cursor:
+                    sql = 'select db_vendor from db_jeeves.PROJECT where ref_identity = %s'
+                    cursor.execute(sql, (identity))
+                    sql_rs = cursor.fetchone()
+                    vendor = (sql_rs and sql_rs['db_vendor']) or "None"
+
+                mu = User(identity, nickname)
+                mu.id = login
+                mu.vendor = vendor
+                return mu
             
         #session.clear()
 
@@ -65,6 +74,9 @@ def get_blueprint():
             login, password, nickname = form.login.data, form.password.data, form.nickname.data
         
             identity = urlsafe_b64encode(os.urandom(6)).decode().lower()
+            
+            schemes.create_user(identity)
+            schemes_pg.create_user(identity)
 
             conn = users.get_connection()
 
@@ -76,22 +88,6 @@ def get_blueprint():
                     mu = User(identity, nickname)
                     mu.id = login
                     login_user(mu)
-
-            dname = '{}db'.format(identity)
-            schema_sql = '''
-            START TRANSACTION;
-            CREATE USER '{0}' IDENTIFIED WITH mysql_native_password BY 'abc';
-            CREATE DATABASE `{1}`;
-            GRANT ALL PRIVILEGES ON `{1}` . * TO '{0}';
-            FLUSH PRIVILEGES;
-            COMMIT;
-            '''.format(identity, dname)
-
-            conn = schemes.get_root_connection()
-            with conn:
-                with conn.cursor() as cursor:
-                    cursor.execute(schema_sql)
-                    conn.commit()
                     
             return redirect(url_for('main'))
 

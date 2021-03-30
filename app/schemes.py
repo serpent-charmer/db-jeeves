@@ -4,7 +4,26 @@ from pymysql.constants import CLIENT
 from flask import Blueprint, request, render_template, jsonify
 from flask_login import current_user
 
-from .dapi import MY_SQL_IP
+from . import schemes_pg
+from .mvars import MY_SQL_IP
+
+
+def create_user(name):
+    dname = '{}db'.format(name)
+    schema_sql = '''
+    START TRANSACTION;
+    CREATE USER '{0}' IDENTIFIED WITH mysql_native_password BY 'abc';
+    CREATE DATABASE `{1}`;
+    GRANT ALL PRIVILEGES ON `{1}` . * TO '{0}';
+    FLUSH PRIVILEGES;
+    COMMIT;
+    '''.format(name, dname)
+
+    conn = get_root_connection()
+    with conn:
+        with conn.cursor() as cursor:
+            cursor.execute(schema_sql)
+            conn.commit()
 
 def get_connection(db_user, db_name, pwd='abc'):
     connection = pymysql.connect(host=MY_SQL_IP,
@@ -52,18 +71,29 @@ def get_blueprint():
         if request and request.json.get('sql'):
 
             identity = current_user.identity
+            vendor = current_user.vendor
             dname = '{}db'.format(identity)
 
-            connection = get_connection(identity, dname)
-            try:
-                with connection:
-                    with connection.cursor() as cursor:
+            if vendor == 'mysql':
+                connection = get_connection(identity, dname)
+                try:
+                    with connection:
+                        with connection.cursor() as cursor:
+                            cursor.execute(request.json['sql'])
+                            sql_rs = cursor.fetchall()
+                except Exception as e:
+                    return str(e), 400
+            else:
 
-                        cursor.execute(request.json['sql'])
-                        sql_rs = cursor.fetchall()
-            except Exception as e:
-                return str(e), 400
-
+                connection = schemes_pg.get_connection(identity, dname)
+                try:
+                    with connection:
+                        with connection.cursor() as cursor:
+                            cursor.execute(request.json['sql'])
+                            connection.commit()
+                            sql_rs = cursor.fetchall()
+                except Exception as e:
+                    return str(e), 400
             return jsonify(sql_rs)
 
         return '', 404

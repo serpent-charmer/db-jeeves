@@ -1,9 +1,9 @@
 import os
 
-from flask import Flask, session, render_template, url_for, jsonify, request, redirect, session, current_app, send_from_directory
+from flask import Flask, make_response, render_template, url_for, jsonify, request, redirect, session, current_app, send_from_directory
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from distutils.dir_util import remove_tree
-from . import dapi, list_dir, langs, users
+from . import dapi, list_dir, langs, users, mvars
 
 
 def get_app():
@@ -91,7 +91,8 @@ def get_app():
                     'select lang from db_jeeves.PROJECT where ref_identity = %s', identity)
                 sql_rs = cursor.fetchone()
 
-        lang, pth = sql_rs and sql_rs['lang'], os.path.join('users', identity, 'app')
+        lang, pth = sql_rs and sql_rs['lang'], os.path.join(
+            'users', identity, 'app')
 
         if not lang:
             return '<h1>Not Found<h1><h2>No project created for this user</h2>'
@@ -109,6 +110,7 @@ def get_app():
     def create_project():
         if request and request.json:
             lang = request.json.get('lang')
+            vendor = request.json.get('vendor')
 
             identity = current_user.identity
 
@@ -124,29 +126,46 @@ def get_app():
                 with conn.cursor() as cursor:
                     try:
                         cursor.execute(
-                            'insert into db_jeeves.PROJECT values(%s, %s, %s)', (identity, lang, None))
+                            'insert into db_jeeves.PROJECT values(%s, %s, %s, %s)', (identity, lang, vendor, None))
                         conn.commit()
                     except:
                         cursor.execute(
-                            'update db_jeeves.PROJECT set lang=%s where ref_identity=%s', (lang, identity))
+                            'update db_jeeves.PROJECT set lang=%s, db_vendor=%s where ref_identity=%s', (lang, vendor, identity))
                         conn.commit()
 
             return jsonify('ok')
 
-    @app.route('/get_diagram', methods=['GET'])
+    @app.route('/get_diagram_mysql', methods=['GET'])
     def get_diagram():
         os.system('''
         schemacrawler --server=mysql --database="{0}db" -schemas=."{0}db"..dbo \
         --host={1} --user={0} --password=abc --info-level=maximum \
         -c=schema --output-format=pdf -o=users/{0}/{0}.pdf "$*"
-        '''.format(current_user.identity, dapi.MY_SQL_IP))
+        '''.format(current_user.identity, mvars.MY_SQL_IP))
+        return redirect(url_for('.view_diagram'))
+
+    @app.route('/get_diagram_pg', methods=['GET'])
+    def get_diagram_pg():
+        os.system('''
+        schemacrawler --server=postgresql --database="{0}db" -schemas=."{0}db"..dbo \
+        --host={1} --user={0} --password=abc --info-level=maximum \
+        -c=schema --output-format=pdf -o=users/{0}/{0}.pdf "$*"
+        '''.format(current_user.identity, mvars.PG_SQL_IP))
         return redirect(url_for('.view_diagram'))
 
     @app.route('/view_diagram', methods=['GET'])
     def view_diagram():
+
         identity = current_user.identity
         pth = os.path.join(os.getcwd(), 'users', identity)
-        return send_from_directory(pth, identity+".pdf")
+
+        response = make_response(send_from_directory(pth, identity+".pdf"))
+
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+
+        
+        return response
 
     @app.route('/get_dir', methods=['GET', 'POST'])
     def get_dir():
@@ -174,11 +193,12 @@ def get_app():
     def get_logs():
         identity = current_user.identity
         log = None
-        try :
+        try:
             log = dapi.get_container_logs(identity)
         except:
             pass
-        log = (log and log.replace("\n", "<br>").replace(" ", "&nbsp;")) or "Container offline"
+        log = (log and log.replace("\n", "<br>").replace(
+            " ", "&nbsp;")) or "Container offline"
         return render_template('logs.html', log=log)
 
     @ app.route('/rm_file', methods=['GET', 'POST'])

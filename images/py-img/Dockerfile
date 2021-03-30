@@ -34,6 +34,7 @@ RUN conda install -y -c anaconda flask \
 	flask-cors \
 	gunicorn \
 	pymysql=1.0.2 \
+    psycopg2 \
 && conda clean -ya
 
 COPY ./app/ .
