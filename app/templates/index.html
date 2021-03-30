@@ -10,9 +10,14 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery.fancytree@2.27/dist/jquery.fancytree-all-deps.min.js"></script>
 
     <script src="https://pagecdn.io/lib/ace/1.4.12/ace.min.js"></script>
+    <script src="https://pagecdn.io/lib/ace/1.4.12/ext-language_tools.min.js"></script>
+    <script src="https://pagecdn.io/lib/ace/1.4.12/ext-prompt.js" crossorigin="anonymous"></script>
+    <!-- <script src="https://pagecdn.io/lib/ace/1.4.12/keybinding-vscode.js"></script> -->
+    <script src="https://pagecdn.io/lib/ace/1.4.12/keybinding-vim.js"></script>
     <script src="https://pagecdn.io/lib/ace/1.4.12/theme-kuroir.min.js"></script>
     <script src="https://pagecdn.io/lib/ace/1.4.12/mode-{{script_lang}}.min.js"></script>
     <script src="https://pagecdn.io/lib/ace/1.4.12/mode-html.min.js"></script>
+    <script src="https://pagecdn.io/lib/ace/1.4.12/mode-ejs.js" crossorigin="anonymous"></script>
 
     <style>
         body {
@@ -92,7 +97,6 @@
             <div id="is-synced">SYNCED</div>
 
             <div id="controls" style="padding:0px;margin-top:1%;margin-bottom:1%;">
-                <button onclick="syncChanges()">Sync</button>
                 <button onclick="restartInstance()">Restart</button>
                 <a href="/get_logs">Logs</a>
                 <a href="/edit_sql">SQL</a>
@@ -130,6 +134,9 @@
     <script>
 
         let EditSession = require("ace/edit_session").EditSession;
+        let UndoManager = require("ace/undomanager").UndoManager;
+        ace.require("ace/ext/language_tools");
+        let undoManager = new UndoManager();
 
         Storage.prototype.setObject = function (key, value) {
             this.setItem(key, JSON.stringify(value));
@@ -157,17 +164,20 @@
                 session.setMode("ace/mode/html");
             } else if (extension === 'php') {
                 session.setMode("ace/mode/php");
+            } else if (extension === 'ejs') {
+                session.setMode("ace/mode/ejs");
             }
             else {
                 session.setMode("ace/mode/{{script_lang}}");
             }
-            session.setUseSoftTabs(true);
             session.on("change", function (e) {
                 let doc_txt = session.getDocument().getValue();
                 setKeyAndSaveMarked(dkey, doc_txt);
                 setKeyAndSaveCached(dkey, doc_txt);
                 $("#is-synced").text("NOT SYNCED");
             });
+
+            session.setUndoManager(undoManager);
 
             return session;
         }
@@ -297,6 +307,25 @@
             });
 
             let editor1 = ace.edit("editor");
+            editor1.setOptions({
+                enableBasicAutocompletion: true,
+                enableLiveAutocompletion: true,
+            });
+            // editor1.setKeyboardHandler("ace/keyboard/vim");
+            editor1.commands.addCommand({
+                name: 'save',
+                bindKey: { win: "Ctrl-S", "mac": "Cmd-S" },
+                exec: function (editor) {
+                    syncChanges();
+                }
+            });
+            editor1.commands.addCommand({
+                name: 'restart',
+                bindKey: { win: "Ctrl-R", "mac": "Cmd-S" },
+                exec: function (editor) {
+                    restartInstance();
+                }
+            });
             editor1.setTheme("ace/theme/kuroir");
             editor1.setFontSize(15);
             let last_edited = localStorage.getObject("last_edited");
@@ -308,8 +337,7 @@
                     editor1.setSession(session);
                 }
             } else {
-                editor1.session.setValue("Pick a node to start working!\nDouble click item to add node;\nSelect node and press Del to delete it.");
-
+                editor1.session.setValue('Pick a node to start working!\nDouble click item to add node;\nSelect node and press Del to delete it;\nCTRL-S to save;\nCTRL-R to restart.');
             }
 
 

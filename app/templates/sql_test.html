@@ -98,15 +98,17 @@
     }
 
     $(function () {
-
+        let UndoManager = require("ace/undomanager").UndoManager;
+        ace.require("ace/ext/language_tools");
+        let undoManager = new UndoManager();
         let EditSession = require("ace/edit_session").EditSession;
 
         let editor1 = ace.edit("editor");
         editor1.setTheme("ace/theme/kuroir");
-
         editor1.setFontSize(15);
 
         let session = new EditSession(localStorage.getObject("sql_script") || "");
+        session.setUndoManager(undoManager);
         session.setMode("ace/mode/sql");
         session.setUseSoftTabs(false);
         session.on("change", function (e) {

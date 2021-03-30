@@ -25,6 +25,18 @@ def get_app():
     def main():
         return render_template('main.html')
 
+    @app.route('/worker-html.js', methods=['GET'])
+    def get_worker_html():
+        return send_from_directory(os.path.join(app.root_path, 'static'), 'worker-html.js')
+
+    @app.route('/worker-javascript.js', methods=['GET'])
+    def get_worker_js():
+        return send_from_directory(os.path.join(app.root_path, 'static'), 'worker-javascript.js')
+
+    @app.route('/worker-php.js', methods=['GET'])
+    def get_worker_php():
+        return send_from_directory(os.path.join(app.root_path, 'static'), 'worker-php.js')
+
     @app.route('/sync_changes', methods=['POST'])
     def sync_changes():
         if not request and not request.json:

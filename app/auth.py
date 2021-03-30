@@ -73,7 +73,7 @@ def get_blueprint():
         if request.method == 'POST' and form.validate():
             login, password, nickname = form.login.data, form.password.data, form.nickname.data
         
-            identity = urlsafe_b64encode(os.urandom(6)).decode().lower()
+            identity = 'u_' + urlsafe_b64encode(os.urandom(6)).decode().lower()
             
             schemes.create_user(identity)
             schemes_pg.create_user(identity)

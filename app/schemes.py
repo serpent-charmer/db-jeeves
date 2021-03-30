@@ -7,7 +7,6 @@ from flask_login import current_user
 from . import schemes_pg
 from .mvars import MY_SQL_IP
 
-
 def create_user(name):
     dname = '{}db'.format(name)
     schema_sql = '''
