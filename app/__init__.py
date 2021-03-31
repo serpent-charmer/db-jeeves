@@ -13,8 +13,10 @@ def get_app():
     with app.app_context():
         from . import schemes
         from . import auth
+        from . import assets
         app.register_blueprint(schemes.get_blueprint())
         app.register_blueprint(auth.get_blueprint())
+        app.register_blueprint(assets.get_blueprint())
 
     @app.route('/favicon.ico', methods=['GET'])
     def favicon():
@@ -24,18 +26,6 @@ def get_app():
     @login_required
     def main():
         return render_template('main.html')
-
-    @app.route('/worker-html.js', methods=['GET'])
-    def get_worker_html():
-        return send_from_directory(os.path.join(app.root_path, 'static'), 'worker-html.js')
-
-    @app.route('/worker-javascript.js', methods=['GET'])
-    def get_worker_js():
-        return send_from_directory(os.path.join(app.root_path, 'static'), 'worker-javascript.js')
-
-    @app.route('/worker-php.js', methods=['GET'])
-    def get_worker_php():
-        return send_from_directory(os.path.join(app.root_path, 'static'), 'worker-php.js')
 
     @app.route('/sync_changes', methods=['POST'])
     def sync_changes():
@@ -147,6 +137,26 @@ def get_app():
 
             return jsonify('ok')
 
+    @app.route('/get_diagram', methods=['POST'])
+    def get_diagram_post():
+        if request and request.json:
+            vendor = request.json['vendor']
+            if vendor == 'mysql':
+                os.system('''
+                schemacrawler --server=mysql --database="{0}db" -schemas=."{0}db"..dbo \
+                --host={1} --user={0} --password=abc --info-level=maximum \
+                -c=schema --output-format=pdf -o=users/{0}/{0}.pdf "$*"
+                '''.format(current_user.identity, mvars.MY_SQL_IP))
+                return jsonify('ok')
+            else:
+                os.system('''
+                schemacrawler --server=postgresql --database="{0}db" -schemas=."{0}db"..dbo \
+                --host={1} --user={0} --password=abc --info-level=maximum \
+                -c=schema --output-format=pdf -o=users/{0}/{0}.pdf "$*"
+                '''.format(current_user.identity, mvars.PG_SQL_IP))
+                return jsonify('ok')
+        return '', 404
+
     @app.route('/get_diagram_mysql', methods=['GET'])
     def get_diagram():
         os.system('''
@@ -175,7 +185,6 @@ def get_app():
 
         response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
         response.headers['Pragma'] = 'no-cache'
-
         
         return response
 

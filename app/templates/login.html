@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    {% include 'fonts.html' %}
     <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
         integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
@@ -16,24 +17,46 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script> -->
 
 
-
     <style>
         body {
-            margin: 0px;
-            background-color: rgb(235, 203, 175);
-            overflow-y: hidden;
+            font-family: "JetBrainsMono-Regular";
         }
 
         #main-container {
-            background-color: rgb(255, 242, 230);
             margin-left: 5%;
             margin-right: 5%;
             padding-top: 3%;
-            height: 9000px;
+           
+
         }
+
         #padded-container {
             padding-left: 5%;
             padding-right: 5%;
+            display: flex;
+            justify-content: center;
+        }
+
+        form {
+            background-color: rgb(126, 167, 185);
+            border-radius: 25px;
+        }
+
+        input {
+            background: none;
+            background-color: rgb(171, 215, 235);
+            padding:5px;
+            border: none;
+            border-radius: 5px;
+            margin:15px;
+        }
+
+        input#submit {
+            background-color: rgb(171, 215, 235);
+            border: none;
+            margin: 0px;
+            font-family: inherit;
+            font-size: inherit;
         }
     </style>
 </head>
@@ -42,8 +65,9 @@
 
 <body>
     <div id="main-container">
+
+        <a href="/register">Зарегистрироваться</a>
         <div id="padded-container">
-            <a href="/register">Зарегистрироваться</a>
             <div align=center>
                 <form method="POST" action="/login">
                     {{ form.csrf_token }}
@@ -55,7 +79,7 @@
                     <br>
                     {{ form.password }}
                     <br><br>
-                    <input type="submit" value="Войти">
+                    <input id="submit" type="submit" value="Войти">
                 </form>
             </div>
         </div>

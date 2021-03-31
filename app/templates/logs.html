@@ -2,18 +2,17 @@
 <html>
 
 <head>
-
+    {% include 'fonts.html' %}
     <title>DB Jeeves</title>
 
     <style>
         body {
             margin: 0px;
             overflow-y: hidden;
-            background-color: rgb(235, 203, 175);
+            font-family: "JetBrainsMono-Regular";
         }
 
         #main-container {
-            background-color: rgb(255, 242, 230);
             margin-left: 5%;
             margin-right: 5%;
             padding-top: 3%;
@@ -33,9 +32,6 @@
     <div id="main-container">
         
         <div id="padded-container">
-            <div style="margin-bottom:1%;">
-                <a href="/view_project">Back</a>
-            </div>
             <h1>LOGS</h1>
                {{log|safe}}
         </div>

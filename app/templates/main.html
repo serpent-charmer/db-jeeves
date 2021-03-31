@@ -7,32 +7,65 @@
     <title>DB Jeeves</title>
 
     {% include 'jquery.jinja' %}
+    {% include 'fonts.html' %}
 
     <style>
+        
+
         body {
-            margin: 0px;
-            background-color: rgb(235, 203, 175);
+            font-family: "JetBrainsMono-Regular";
+        }
+
+        select {
+            appearance: none;
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            margin: 0;
+            font-family: inherit;
+            font-size: inherit;
+            cursor: inherit;
+            line-height: inherit;
+            text-align: center;
+            transition: all 0.3s ease 0s;   
+            border-radius:5px;
+        }
+        select:hover {
+            background-color: rgb(126, 167, 185);
+        }
+
+        select option {
+            background-color: white;
+        }
+        
+        button {
+            font-family: inherit;
+            appearance: none;
         }
 
         #main-container {
-            background-color: rgb(255, 242, 230);
             height: 100%;
             margin-left: 5%;
             margin-right: 5%;
+            text-align: center;
+        }
+
+        .soptions {
+            justify-content: space-evenly;
+            display: flex;
         }
     </style>
 </head>
 
 <body>
     <div id="main-container">
-        <div style="padding-left:5%;padding-top:5%;">
+        <div style="left:0%;">
             <a href="/logout">Logout</a>
         </div>
-        <div align="center">
-            <br>
-            <h1>DB Jeeves</h1>
-            <h3>Write WebCode, forget DevOps!</h3>
-            <div id="main" style="padding: 0% 5% 5% 5%;">
+        <h1>DB Jeeves</h1>
+        <h3>Write WebCode, forget DevOps!</h3>
+        <div id="main" style="padding: 0% 5% 5% 5%;">
+            <div class="soptions">
                 <select id="lang">
                     <option value="javascript">JS</option>
                     <option value="python">PY</option>
@@ -40,13 +73,14 @@
                 </select>
                 <select id="vendor">
                     <option value="mysql">MYSQL</option>
-                    <option value="postgresql">POSTGRESQL</option>
+                    <option value="postgresql">PGSQL</option>
                 </select>
-                <button onclick="create()">Create</button>
-                <div style="margin-top:1%;"><a target="_blank" href="/view_project">View</a></div>
-                <div id="status" style="margin-top:1%;display:none">Ready!</div>
             </div>
 
+            <a href="#" onclick="create()" style="margin:30px">Create</a>
+            
+            <div style="margin-top:1%;"><a target="_blank" href="/view_project">View</a></div>
+            <div id="status" style="margin-top:1%;display:none">Ready!</div>
         </div>
     </div>
 </body>

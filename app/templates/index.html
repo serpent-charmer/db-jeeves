@@ -6,6 +6,7 @@
     <title>DB Jeeves</title>
 
     {% include 'jquery.jinja' %}
+    {% include 'fonts.html' %}
 
     <script src="https://cdn.jsdelivr.net/npm/jquery.fancytree@2.27/dist/jquery.fancytree-all-deps.min.js"></script>
 
@@ -20,21 +21,62 @@
     <script src="https://pagecdn.io/lib/ace/1.4.12/mode-ejs.js" crossorigin="anonymous"></script>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        .dropbtn {
+            background-color: rgb(126, 167, 185);
+            color: white;
+            font-size: 16px;
+            padding-bottom: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 15px;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 99999;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: rgb(171, 215, 235);
+        }
+
         body {
             margin: 0px;
             overflow-y: hidden;
-            background-color: rgb(235, 203, 175);
+            font-family: "JetBrainsMono-Regular";
         }
 
-        #main-container {
-            height: 100%;
-            margin-left: 5%;
-            margin-right: 5%;
-        }
+        #main-container {}
 
         #padded-container {
-            background-color: rgb(255, 242, 230);
-            height: 100%;
             margin-left: 5%;
             margin-right: 5%;
             padding-left: 3%;
@@ -42,23 +84,28 @@
         }
 
         #controls {
-            padding-bottom: 1%;
-            padding-left: 1%;
+            padding: 1% 5% 1% 5%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            align-content: center;
         }
 
         #suite {
             display: flex;
             height: 70%;
+            border: 15px solid rgb(199, 213, 224);
+            border-radius: 15px;
+            background-color: #fbf4f4 !important;
         }
 
         #tree-container {
             overflow-y: none;
             min-width: 15%;
-            max-height: 100%;
         }
 
         #tree {
-            overflow: auto;
+            /* overflow: auto; */
         }
 
         #editor-container {
@@ -70,53 +117,234 @@
             height: 100%;
         }
 
-        #user-name {
+        #user-name div {
             /* font-size: 25; */
-
+            /* display: inline-block; */
         }
 
         .fancytree-container {
             background-color: #e8e8e8 !important;
-            height: auto;
+            height: 100%;
+        }
+
+        nav li {
+            display: inline-block;
+        }
+
+        nav ul {
+            padding-left: 0px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 30px 5% 0px 5%;
+        }
+
+        footer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        #spinner {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            top: 0%;
+            width: 100%;
+            height: 100%;
+            z-index: 99999;
+            visibility: hidden;
+        }
+
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        #spinner-inner {
+            background-color: rgba(0, 96, 185, 10);
+            opacity: 35%;
+            position: inherit;
+            width: inherit;
+            height: inherit;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            animation: gradient 15s ease infinite;
+        }
+
+        #spinner img {
+            position: inherit;
+            opacity: 100% !important;
+            padding-left: 25%;
+            padding-right: 25%;
+            border-radius: 70%;
+            z-index: 99999;
+        }
+
+        #diagram {
+            background-color: white;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            visibility: hidden;
+            z-index: 999999;
+            display: inline-block;
+            overflow-y: scroll;
+        }
+
+        #diagram #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 5%;
+            padding-right: 5%;
+        }
+
+        #diagram iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        #logs {
+            background-color: white;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            visibility: hidden;
+            z-index: 999999;
+            display: inline-block;
+        }
+
+        #logs #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 5%;
+            padding-right: 5%;
+        }
+
+        #logs iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        #instance {
+            background-color: white;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            visibility: hidden;
+            z-index: 999999;
+            display: inline-block;
+        }
+
+        #instance #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 5%;
+            padding-right: 5%;
+        }
+
+        #instance iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
     </style>
 </head>
 
 <body>
+    <div id="diagram">
+        <div id="header">
+            <p>DIAGRAM</p>
+            <a href="#" onclick="closeDiagram()">Close</a>
+        </div>
+        <div>
+            <iframe id="iframe-diagram" src="">
+            </iframe>
+        </div>
+    </div>
+    <div id="logs">
+        <div id="header">
+            <p>LOGS</p>
+            <a href="#" onclick="closeLogs()">Close</a>
+        </div>
+        <div>
+            <iframe id="iframe-logs" src="">
+            </iframe>
+        </div>
+
+    </div>
+    <div id="instance">
+        <div id="header">
+            <p>
+                <a id="instance-name" target="_blank">Goto</a>
+            </p>
+            <a href="#" onclick="closeInstance()">Close</a>
+        </div>
+        <div>
+            <iframe id="port" src="">
+            </iframe>
+        </div>
+
+    </div>
+    <div id="vendor" style="visibility:hidden;">{{current_user.vendor}}</div>
     <div id="#main-container">
         <div id="padded-container">
-            <br>
-            <div id="user-name" align="center">
-                <div>Made by: {{current_user.nickname}}</div>
-                <div>Vendor: {{current_user.vendor}}</div>
-                <div style="margin-top:1%;"><button onclick="share()">Share</button></div>
-            </div>
-            <div style="margin-bottom:1%;">
-                <a href="/">Back</a>
-            </div>
-            <div id="is-synced">SYNCED</div>
+            <a href="/">Back</a>
+            <header>
+                <div id="user-name" align="center">
+                    <div>{{current_user.nickname}}</div>
+                </div>
+                <nav>
+                    <ul class=>
+                        <!-- <li> <a href="#" onclick="restartInstance()">Restart</a> </li> -->
+                        <li>
+                            <div id="is-synced" style="font-weight: bold;">SYNCED</div>
+                            <!-- <div style="margin-top:1%;">
+                                <button onclick="share()">Share</button>
+                            </div> -->
+                        </li>
+                    </ul>
+                </nav>
 
-            <div id="controls" style="padding:0px;margin-top:1%;margin-bottom:1%;">
-                <button onclick="restartInstance()">Restart</button>
-                <a href="/get_logs">Logs</a>
-                <a href="/edit_sql">SQL</a>
-                {% if has_diagram %}
-                <a target="_blank" href="/view_diagram">Diagram</a>
-                {% if current_user.vendor and current_user.vendor=="mysql" %}
-                <a target="_blank" href="/get_diagram_mysql">(Redo)</a>
-                {% else %}
-                <a target="_blank" href="/get_diagram_pg">(Redo)</a>
-                {% endif %}
-                {% else %}
-                {% if current_user.vendor and current_user.vendor=="mysql" %}
-                <a target="_blank" href="/get_diagram_mysql">CreateDiagram</a>
-                {% else %}
-                <a target="_blank" href="/get_diagram_pg">CreateDiagram</a>
-                {% endif %}
-                {% endif %}
-                <img id="spinner" style="display:none;max-height:16px;width:64px;"
-                    src="https://i.gifer.com/origin/3e/3ef326d43744e0877c24b8c07542a2e7_w200.gif"></img>
-                <a id="port" target="_blank" href="">Instance</a>
+                <div class="dropdown">
+                    <button class="dropbtn">...</button>
+                    <div class="dropdown-content">
+                        <a href="/edit_sql">SQL</a>
+                        <a target="#" onclick="getLogs()">Logs</a>
+                        <a target="#" onclick="getDiagram()">Diagram</a>
+                        <a target="#" onclick="getInstance()">Instance</a>
+                    </div>
+                </div>
+            </header>
+
+            <div id="controls">
+                <div id="spinner">
+                    <div id="spinner-inner">
+
+                    </div>
+
+                    <img src="https://64.media.tumblr.com/tumblr_lvpgquhGbq1r54h4xo1_400.gif"></img>
+                </div>
+
+
             </div>
             <div id="suite">
 
@@ -147,8 +375,47 @@
             return value && JSON.parse(value);
         }
 
+        jQuery.fn.visible = function () {
+            return this.css('visibility', 'visible');
+        };
+
+        jQuery.fn.invisible = function () {
+            return this.css('visibility', 'hidden');
+        };
+
         function isObjNull(obj) {
             return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
+        }
+
+        function getDiagram() {
+            $("#spinner").visible();
+            let data = { "vendor": $("#vendor").text() };
+            postAjax("/get_diagram", data, function () {
+                $("#iframe-diagram").attr("src", "/view_diagram");
+                $("#spinner").invisible();
+                $("#diagram").visible();
+            });
+        }
+
+        function closeDiagram() {
+            $("#diagram").invisible();
+        }
+
+        function getLogs() {
+            $("#iframe-logs").attr("src", "/get_logs");
+            $("#logs").visible();
+        }
+
+        function closeLogs() {
+            $("#logs").invisible();
+        }
+
+        function getInstance() {
+            restartInstance();
+        }
+
+        function closeInstance() {
+            $("#instance").invisible();
         }
 
         function initSession(dkey, content) {
@@ -183,14 +450,11 @@
         }
 
         function copyToClipboard(textToCopy) {
-            // navigator clipboard api needs a secure context (https)
             if (navigator.clipboard && window.isSecureContext) {
-                // navigator clipboard api method'
                 return navigator.clipboard.writeText(textToCopy);
             } else {
-                // text area method
                 let textArea = document.createElement("textarea");
-                textArea.value = textToCopy;// make the textarea out of viewport
+                textArea.value = textToCopy;
                 textArea.style.position = "fixed";
                 textArea.style.left = "-999999px";
                 textArea.style.top = "-999999px";
@@ -198,7 +462,6 @@
                 textArea.focus();
                 textArea.select();
                 return new Promise((res, rej) => {
-                    // here the magic happens
                     document.execCommand('copy') ? res() : rej();
                     textArea.remove();
                 });
@@ -237,8 +500,7 @@
 
         function restartInstance() {
             let user_name = localStorage.getObject("user_name");
-            $("#spinner").show();
-            $("#port").hide();
+            $("#spinner").visible();
             $.ajax({
                 url: '/restart_instance',
                 type: "POST",
@@ -249,14 +511,15 @@
                     let [ip, _] = window.location.host.split(":");
                     let instance_url = "http://" + ip + ":" + data.port;
                     localStorage.setObject("instance_url", instance_url);
-                    $("#port").attr("href", instance_url);
+                    $("#port").attr("src", instance_url);
+                    $("#instance-name").attr("href", instance_url);
                 },
                 error: function (xhr, status, error) {
                     console.log(error);
                 },
                 complete: function (data) {
-                    $("#spinner").hide();
-                    $("#port").show();
+                    $("#spinner").invisible();
+                    $("#instance").visible();
                 }
             });
         };
@@ -311,7 +574,6 @@
                 enableBasicAutocompletion: true,
                 enableLiveAutocompletion: true,
             });
-            // editor1.setKeyboardHandler("ace/keyboard/vim");
             editor1.commands.addCommand({
                 name: 'save',
                 bindKey: { win: "Ctrl-S", "mac": "Cmd-S" },
