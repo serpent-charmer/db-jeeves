@@ -10,6 +10,10 @@ def get_blueprint():
     def get_worker_html():
         return send_from_directory(os.path.join(current_app.root_path, 'static'), 'worker-html.js')
 
+    @assets_bp.route('/loading.gif', methods=['GET'])
+    def get_loaging_gif():
+        return send_from_directory(os.path.join(current_app.root_path, 'static'), 'loading.gif')
+
     @assets_bp.route('/fonts/JetBrainsMono-Regular.ttf', methods=['GET'])
     def get_font():
         return send_from_directory(os.path.join(current_app.root_path, 'static'), 'JetBrainsMono-VariableFont_wght.ttf')
