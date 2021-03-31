@@ -187,10 +187,7 @@
 
         #spinner img {
             position: inherit;
-            opacity: 100% !important;
-            padding-left: 25%;
-            padding-right: 25%;
-            border-radius: 70%;
+            opacity: 100%;
             z-index: 99999;
         }
 
@@ -309,9 +306,6 @@
         <div id="padded-container">
             <a href="/">Back</a>
             <header>
-                <div id="user-name" align="center">
-                    <div>{{current_user.nickname}}</div>
-                </div>
                 <nav>
                     <ul class=>
                         <!-- <li> <a href="#" onclick="restartInstance()">Restart</a> </li> -->
@@ -323,10 +317,13 @@
                         </li>
                     </ul>
                 </nav>
-
+                <div id="user-name" align="center">
+                    <div>{{current_user.nickname}}</div>
+                </div>
                 <div class="dropdown">
                     <button class="dropbtn">...</button>
                     <div class="dropdown-content">
+                        <a href="#" onclick="test()">Vi</a>
                         <a href="/edit_sql">SQL</a>
                         <a target="#" onclick="getLogs()">Logs</a>
                         <a target="#" onclick="getDiagram()">Diagram</a>
@@ -385,6 +382,10 @@
 
         function isObjNull(obj) {
             return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
+        }
+
+        function test() {
+            $("#spinner").visible();
         }
 
         function getDiagram() {
@@ -674,9 +675,21 @@
                                 contentType: "application/json; charset=utf-8",
                                 data: JSON.stringify({ "path": data.node.key }),
                                 success: function (ds) {
+                                    editor1.session.setValue("");
+
                                     data.node.remove();
                                     let d = data.node.tree.toDict(true);
                                     localStorage.setObject("tree_content", d);
+
+                                    let dirt = localStorage.getObject("mark_dirty");
+                                    delete dirt[data.node.key];
+                                    localStorage.setObject("mark_dirty", dirt);
+
+                                    let cached = localStorage.getObject("mark_cached");
+                                    delete cached[data.node.key];
+                                    localStorage.setObject("mark_cached", cached);
+
+                                    $("#is-synced").text("SYNCED");
                                 }
                             }).fail(function () {
                                 let dirt = localStorage.getObject("mark_dirty");
