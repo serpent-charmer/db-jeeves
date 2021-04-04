@@ -16,7 +16,6 @@
     {% include 'fonts.html' %}
     <style>
         body {
-            overflow-y: scroll;
             font-family: "JetBrainsMono-Regular";
         }
 
@@ -25,8 +24,6 @@
             height: 250px;
         }
 
-        #main-container {}
-
         #padded-container {
             padding-left: 5%;
             padding-right: 5%;
@@ -34,19 +31,24 @@
 
         #sql-result {
             margin-bottom: 5%;
-            overflow-y: scroll;
+            overflow-y: scroll !important;
+            max-height:350px;
         }
 
         #sql-status-desc {
-            max-width:50%;
-            max-height:50px;
             overflow-y:auto;
+            margin-top:5%;
         }
 
         header {
             display: flex;
             justify-content: space-around;
         }
+
+        .tab-container {
+            margin-top: 5%;
+        }
+
     </style>
 
 </head>
@@ -63,14 +65,14 @@
 
             </header>
             
-            <div style="display:flex;justify-content: space-between; align-items: center;">
+            <div>
                 <p id="sql-status">Run some SQL</p>
-                <p id="sql-status-desc">None</p>
             </div>
-
+            
             <div>
                 <div id="editor"></div>
             </div>
+            <div style="display:none;" id="sql-status-desc">None</div>
             <div id="sql-result" class="tab-container"></div>
         </div>
     </div>
@@ -149,8 +151,9 @@
             exec: function (editor) {
                 runSql(function (data) {
                     $("#sql-status").text("Ok");
-                    $("#sql-status-desc").text("Nothing");
-                    if (data) {
+                    if (data && data.length > 0) {
+                        $("#sql-result").show();
+                        $("#sql-status-desc").hide();
                         let columns = Object.keys(data[0]).map(function (i) { return { 'title': i, 'field': i } });
                         let table = new Tabulator("#sql-result", {
                             layout: "fitColumns",
@@ -160,10 +163,14 @@
                         localStorage.setObject("sql_result", { 'data': data, 'columns': columns });
                     } else {
                         $("#sql-result").hide();
+                        $("#sql-status-desc").show();
+                        $("#sql-status-desc").text("Nothing to show");
                     }
 
                 }, function (xhr, status, error) {
                     $("#sql-status").text("Err");
+                    $("#sql-result").hide();
+                    $("#sql-status-desc").show();
                     $("#sql-status-desc").text(xhr.responseText);
                 });
             }
