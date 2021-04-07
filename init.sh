@@ -1,3 +1,4 @@
+./create_service.py
 ./scripts/build_all.sh
 ./scripts/create_db_net.sh
 ./scripts/mysql.sh
@@ -8,7 +9,7 @@ groupadd webdev
 usermod -aG docker db_jeeves_user
 usermod -aG webdev db_jeeves_user
 chgrp -R webdev .
-chmod -R 777 .
+chmod -R 770 .
 chgrp webdev /usr/local/bin/schemacrawler
 
 systemctl enable db_jeeves.service
