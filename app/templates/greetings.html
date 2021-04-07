@@ -1,0 +1,85 @@
+<html>
+
+
+<head>
+
+
+    <title>DB Jeeves</title>
+
+    {% include 'jquery.jinja' %}
+    {% include 'fonts.html' %}
+
+    <style>
+        body {
+            font-family: "JetBrainsMono-Regular";
+        }
+
+        select {
+            appearance: none;
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            margin: 0;
+            font-family: inherit;
+            font-size: inherit;
+            cursor: inherit;
+            line-height: inherit;
+            text-align: center;
+            transition: all 0.3s ease 0s;
+            border-radius: 5px;
+        }
+
+        select:hover {
+            background-color: rgb(126, 167, 185);
+        }
+
+        select option {
+            background-color: white;
+        }
+
+        button {
+            font-family: inherit;
+            appearance: none;
+        }
+
+        #main-container {
+            height: 100%;
+            margin-left: 5%;
+            margin-right: 5%;
+            text-align: center;
+        }
+
+        .soptions {
+            justify-content: space-evenly;
+            display: flex;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="main-container">
+        <h1>DB Jeeves</h1>
+        <div style="display:flex;justify-content:space-around;">
+            <a href="/">Start hacking</a>
+        
+            <a href="/show_all">Все проекты</a>
+        </div>
+        <div style="padding-left:25%; padding-right: 25%; padding-bottom:5%; text-align: left;">
+            <p>
+                DB Jeeves - это простой способ работать с веб-кодом и БД, не задумываясь о развертывании необходимой архитектуры
+            </p>
+            <p>
+                Достаточно написать веб-приложение на одном из доступных языков(Python, Javascript, PHP) и выбрать тип базы данных(MySQL/PgSQL)
+            </p>
+        </div>
+        <div style="display:inline-block;justify-content: center;">
+            <img src="/static/diagram.png">
+        </img>
+        <div>
+            <i>Диаграмма работы системы</i>
+        </div>
+        </div>
+    </div>
+</body>
+
+</html>

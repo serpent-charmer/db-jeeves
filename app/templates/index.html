@@ -25,6 +25,44 @@
             box-sizing: border-box;
         }
 
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        @keyframes gradient-horizontal {
+            0% {
+                background-position: 50% 100%;
+            }
+
+            50% {
+                background-position: 100% 100%;
+            }
+
+            100% {
+                background-position: 50% 100%;
+            }
+        }
+
+        .grad-background {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            animation: gradient 1s ease infinite;
+        }
+
+        .grad-horizontal-background {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            animation: gradient-horizontal 1s ease infinite;
+        }
+
         .dropbtn {
             background-color: rgb(126, 167, 185);
             color: white;
@@ -74,7 +112,19 @@
             font-family: "JetBrainsMono-Regular";
         }
 
-        #main-container {}
+        #is-synced-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1%;
+        }
+
+        #is-synced {
+            width: 100%;
+            text-align: center;
+            border-radius: 15px;
+            font-size: 150%;
+        }
 
         #padded-container {
             margin-left: 5%;
@@ -127,19 +177,10 @@
             height: 100%;
         }
 
-        nav li {
-            display: inline-block;
-        }
-
-        nav ul {
-            padding-left: 0px;
-        }
-
         header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 30px 5% 0px 5%;
         }
 
         footer {
@@ -161,28 +202,20 @@
             visibility: hidden;
         }
 
-        @keyframes gradient {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
         #spinner-inner {
-            background-color: rgba(0, 96, 185, 10);
+            /* background-color: rgba(0, 96, 185, 10); */
             opacity: 35%;
             position: inherit;
             width: inherit;
             height: inherit;
-            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-            animation: gradient 15s ease infinite;
+        }
+
+        #spinner p {
+            opacity: 100%;
+            z-index: 999999;
+            padding-bottom: 30%;
+            font-size: 175%;
+            display: none;
         }
 
         #spinner img {
@@ -302,41 +335,55 @@
 
     </div>
     <div id="vendor" style="visibility:hidden;">{{current_user.vendor}}</div>
+    <div id="read-only" style="visibility:hidden;">{{read_only}}</div>
     <div id="#main-container">
         <div id="padded-container">
-            <a href="/">Back</a>
+
             <header>
-                <nav>
-                    <ul class=>
-                        <!-- <li> <a href="#" onclick="restartInstance()">Restart</a> </li> -->
-                        <li>
-                            <div id="is-synced" style="font-weight: bold;">SYNCED</div>
-                            <!-- <div style="margin-top:1%;">
-                                <button onclick="share()">Share</button>
-                            </div> -->
-                        </li>
-                    </ul>
-                </nav>
-                <div id="user-name" align="center">
-                    <div>{{current_user.nickname}}</div>
-                </div>
+                {% if read_only=='true' %}
+                    <a href="/show_all">Back</a>
+                {% else %}
+                    <a href="/">Back</a>
+                {% endif %}
                 <div class="dropdown">
                     <button class="dropbtn">...</button>
                     <div class="dropdown-content">
                         <a href="#" onclick="test()">Vi</a>
+                        {% if read_only == 'false' %}
                         <a href="/edit_sql">SQL</a>
                         <a target="#" onclick="getLogs()">Logs</a>
                         <a target="#" onclick="getDiagram()">Diagram</a>
                         <a target="#" onclick="getInstance()">Instance</a>
+                        {% else %}
+                        <a href="/view_diagram/{{current_user.identity}}">Diagram</a>
+                        {% endif %}
+
                     </div>
                 </div>
+
             </header>
+            {% if read_only == 'false' %}
+            <div id="is-synced-container">
+                <div id="is-synced">SYNCED</div>
+            </div>
+            <div id="user-name" align="center">
+                <div>{{current_user.nickname}}</div>
+            </div>
+            {% else %}
+            <div id="user-name" align="center">
+                <div>Reviewing {{reviewed_user}}</div>
+            </div>
+            {% endif %}
+
 
             <div id="controls">
                 <div id="spinner">
-                    <div id="spinner-inner">
+                    <div id="spinner-inner" class="grad-background">
 
                     </div>
+                    <p>
+                        LOADING
+                    </p>
 
                     <img src="/loading.gif"></img>
                 </div>
@@ -450,33 +497,6 @@
             return session;
         }
 
-        function copyToClipboard(textToCopy) {
-            if (navigator.clipboard && window.isSecureContext) {
-                return navigator.clipboard.writeText(textToCopy);
-            } else {
-                let textArea = document.createElement("textarea");
-                textArea.value = textToCopy;
-                textArea.style.position = "fixed";
-                textArea.style.left = "-999999px";
-                textArea.style.top = "-999999px";
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                return new Promise((res, rej) => {
-                    document.execCommand('copy') ? res() : rej();
-                    textArea.remove();
-                });
-            }
-        }
-
-        function share() {
-            copyToClipboard(window.location.host + "/view_project/{{current_user.identity}}")
-                .then(function () {
-                    alert("Link copied to clipboard.");
-                })
-                .catch(function () { });
-        }
-
         function postAjax(url, data, success = function (data) { console.log(data) }) {
             $.ajax({
                 url: url,
@@ -560,7 +580,6 @@
                 $(this).text("No instance online");
             }
             $("#port").click(function (e) {
-
                 let instance_url = localStorage.getObject("instance_url");
                 if (instance_url) {
                     return;
@@ -571,6 +590,9 @@
             });
 
             let editor1 = ace.edit("editor");
+            if (JSON.parse($("#read-only").text())) {
+                editor1.setReadOnly(true);
+            }
             editor1.setOptions({
                 enableBasicAutocompletion: true,
                 enableLiveAutocompletion: true,

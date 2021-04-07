@@ -14,9 +14,11 @@ def get_app():
         from . import schemes
         from . import auth
         from . import assets
+        from . import review
         app.register_blueprint(schemes.get_blueprint())
         app.register_blueprint(auth.get_blueprint())
         app.register_blueprint(assets.get_blueprint())
+        app.register_blueprint(review.get_blueprint())
 
     @app.route('/favicon.ico', methods=['GET'])
     def favicon():
@@ -26,6 +28,11 @@ def get_app():
     @login_required
     def main():
         return render_template('main.html')
+
+    @app.route('/greetings', methods=['GET'])
+    @login_required
+    def greetings():
+        return render_template('greetings.html')
 
     @app.route('/sync_changes', methods=['POST'])
     def sync_changes():
@@ -56,8 +63,8 @@ def get_app():
             return jsonify({'port': port})
         return '', 404
 
-    @app.route('/view_project/<string:identity>', methods=['GET'])
-    def view_project_ref(identity):
+    @app.route('/view_project_container/<string:identity>', methods=['GET'])
+    def view_project_container(identity):
 
         last_port = None
 
@@ -104,6 +111,7 @@ def get_app():
 
         return render_template('index.html',
                                has_diagram=has_diagram,
+                               read_only='false',
                                force_update=force_update,
                                script_lang=lang,
                                app_path=list_dir.map_lang_dir(lang, pth))
@@ -164,7 +172,7 @@ def get_app():
         --host={1} --user={0} --password=abc --info-level=maximum \
         -c=schema --output-format=pdf -o=users/{0}/{0}.pdf "$*"
         '''.format(current_user.identity, mvars.MY_SQL_IP))
-        return redirect(url_for('.view_diagram'))
+        return redirect(url_for('view_diagram'))
 
     @app.route('/get_diagram_pg', methods=['GET'])
     def get_diagram_pg():
@@ -173,7 +181,7 @@ def get_app():
         --host={1} --user={0} --password=abc --info-level=maximum \
         -c=schema --output-format=pdf -o=users/{0}/{0}.pdf "$*"
         '''.format(current_user.identity, mvars.PG_SQL_IP))
-        return redirect(url_for('.view_diagram'))
+        return redirect(url_for('view_diagram'))
 
     @app.route('/view_diagram', methods=['GET'])
     def view_diagram():

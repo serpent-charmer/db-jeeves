@@ -1,11 +1,13 @@
 import os
+
 import pymysql.cursors
-from pymysql.constants import CLIENT
-from flask import Blueprint, request, render_template, jsonify
+from flask import Blueprint, jsonify, render_template, request
 from flask_login import current_user
+from pymysql.constants import CLIENT
 
 from . import schemes_pg
 from .mvars import MY_SQL_IP
+
 
 def create_user(name):
     dname = '{}db'.format(name)

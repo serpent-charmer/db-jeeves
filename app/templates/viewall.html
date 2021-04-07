@@ -8,6 +8,8 @@
 
     {% include 'jquery.jinja' %}
     {% include 'fonts.html' %}
+    <link href="https://unpkg.com/tabulator-tables@4.8.2/dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.8.2/dist/js/tabulator.min.js"></script>
 
     <style>
         body {
@@ -44,8 +46,8 @@
 
         #main-container {
             height: 100%;
-            margin-left: 5%;
-            margin-right: 5%;
+            margin-left: 15%;
+            margin-right: 15%;
             text-align: center;
         }
 
@@ -53,33 +55,28 @@
             justify-content: space-evenly;
             display: flex;
         }
+
+        tr {
+            display: flex;
+            justify-content: space-around;
+        }
     </style>
 </head>
 
 <body>
+    <a href="/greetings">
+        Back
+    </a>
     <div id="main-container">
-        <div style="left:0%;">
-            <a href="/logout">Logout</a>
+        
+        <div id="vlist" style="display:none;">
+            {{ vlist | safe }}
         </div>
-        <h4><a href="/greetings">Описание</a></h4>
-        <div id="main" style="padding: 0% 5% 5% 5%;">
-            <div class="soptions">
-                <select id="lang">
-                    <option value="javascript">JS</option>
-                    <option value="python">PY</option>
-                    <option value="php">PHP</option>
-                </select>
-                <select id="vendor">
-                    <option value="mysql">MYSQL</option>
-                    <option value="postgresql">PGSQL</option>
-                </select>
-            </div>
+        <div id="sql-result">
 
-            <a href="#" onclick="create()" style="margin:30px">Create</a>
-
-            <div style="margin-top:1%;"><a target="_blank" href="/view_project">View</a></div>
-            <div id="status" style="margin-top:1%;display:none">Ready!</div>
         </div>
+
+
     </div>
 </body>
 <script>
@@ -100,15 +97,23 @@
         });
     }
 
-    function create() {
-        postAjax('create_project', { lang: $('#lang').val(), vendor: $("#vendor").val() },
-            function (data) {
-                window.location = "/view_project?&force=true";
-            });
-    }
-
-
-   
+    $(function () {
+        let vlist = JSON.parse(`{{vlist | safe}} `);
+        let columns1 = [['nickname', 'Name'], ['db_vendor', 'Vendor'], ['lang', 'Language']];//Object.keys(vlist[0]).map(function (i) { return { 'title': i, 'field': i } });
+        let columns = Object.values(columns1).map(function (i) {
+            let [a, b] = i;
+            return { 'title': b, 'field': a}
+        });
+        console.log(columns);
+        let table = new Tabulator("#sql-result", {
+            layout: "fitColumns",
+            data: vlist,
+            columns: columns,
+            rowClick: function (e, row) {
+                window.location='/review_project/' + row._row.data.identity;
+            },
+        });
+    });
 
 </script>
 

@@ -89,7 +89,7 @@ def get_blueprint():
                     mu.id = login
                     login_user(mu)
                     
-            return redirect(url_for('main'))
+            return redirect(url_for('greetings'))
 
         return render_template('register.html', form=form)
 
@@ -109,7 +109,7 @@ def get_blueprint():
                         mu = User(id['identity'], id['nickname'])
                         mu.id = login
                         login_user(mu)
-                        return redirect(url_for('main'))
+                        return redirect(url_for('greetings'))
 
         return render_template('login.html', form=form)
 
