@@ -1,3 +1,4 @@
+./create_service.py
 ./scripts/build_all.sh
 ./scripts/create_db_net.sh
 ./scripts/mysql.sh
