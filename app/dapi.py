@@ -7,6 +7,7 @@ from uuid import uuid4
 from distutils.dir_util import copy_tree, remove_tree, create_tree
 from . import mvars
 
+
 def copy_new_img(path, new_path):
     u_path = os.path.join('users', new_path)
     i_path = os.path.join('images', path)
@@ -45,14 +46,14 @@ def build_custom_img(path, name):
     except:
         pass
 
-    container = client.containers.create(name, \
-                                         name=container_name, \
+    container = client.containers.create(name,
+                                         name=container_name,
                                          extra_hosts={"mysql-db": mvars.MY_SQL_IP,
-                                                        "pgsql-db": mvars.PG_SQL_IP}, \
-                                         network='db_network', \
-                                         detach=True, \
-                                         ports={mvars.DEFAULT_PORT: None}, \
-                                         environment=['DB_LOGIN=%s' % name, 'DB_PWD=abc', 'DB_NAME=%s' % (name+"db")])
+                                                      "pgsql-db": mvars.PG_SQL_IP},
+                                         network='db_network',
+                                         detach=True,
+                                         ports={mvars.DEFAULT_PORT: None},
+                                         environment=['DEFAULT_PORT=%d' % mvars.DEFAULT_PORT, 'DB_LOGIN=%s' % name, 'DB_PWD=abc', 'DB_NAME=%s' % (name+"db")])
 
     container.start()
     container.reload()
