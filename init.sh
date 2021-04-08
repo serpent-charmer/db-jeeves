@@ -9,7 +9,7 @@ groupadd webdev
 usermod -aG docker db_jeeves_user
 usermod -aG webdev db_jeeves_user
 chgrp -R webdev .
-chmod -R 777 .
+chmod -R 770 .
 chgrp webdev /usr/local/bin/schemacrawler
 
 systemctl enable db_jeeves.service
