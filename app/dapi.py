@@ -36,7 +36,11 @@ def copy_js_img(name):
 def build_custom_img(path, name):
 
     client = docker.from_env()
-    client.images.build(path=path, tag=name)
+
+    client.images.prune()
+    client.containers.prune()
+
+    client.images.build(path=path, tag=name, rm=True)
 
     container_name = 'container-'+name
 
@@ -57,8 +61,6 @@ def build_custom_img(path, name):
 
     container.start()
     container.reload()
-
-    client.containers.prune()
 
     client.close()
 

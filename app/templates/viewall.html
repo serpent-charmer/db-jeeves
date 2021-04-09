@@ -60,15 +60,25 @@
             display: flex;
             justify-content: space-around;
         }
+
+        #padded-container {
+            padding-left: 5%;
+            padding-right: 5%;
+        }
+
     </style>
 </head>
 
 <body>
-    <a href="/greetings">
-        Back
-    </a>
+    <div style="padding:1%; padding-left:5%;">
+        <a href="/greetings">
+            Back
+        </a>
+    </div>
     <div id="main-container">
-        
+        <h1>
+            Проекты
+        </h1>
         <div id="vlist" style="display:none;">
             {{ vlist | safe }}
         </div>
@@ -99,7 +109,7 @@
 
     $(function () {
         let vlist = JSON.parse(`{{vlist | safe}} `);
-        let columns1 = [['nickname', 'Name'], ['db_vendor', 'Vendor'], ['lang', 'Language']];//Object.keys(vlist[0]).map(function (i) { return { 'title': i, 'field': i } });
+        let columns1 = [['nickname', 'Имя'], ['db_vendor', 'Вендор'], ['lang', 'Язык программирования']];//Object.keys(vlist[0]).map(function (i) { return { 'title': i, 'field': i } });
         let columns = Object.values(columns1).map(function (i) {
             let [a, b] = i;
             return { 'title': b, 'field': a}

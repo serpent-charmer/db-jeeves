@@ -1,7 +1,7 @@
 FROM debian:stable
-RUN apt-get update && apt-get install -y apt-transport-https 
-RUN apt-get install nodejs curl -y
-RUN curl -L https://npmjs.org/install.sh | sh
+RUN apt-get update && apt-get install -y apt-transport-https curl \
+ && curl -sL https://deb.nodesource.com/setup_15.x | bash - && apt-get update \
+ && apt-get install nodejs -y
 
 WORKDIR /app
 

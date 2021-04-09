@@ -9,8 +9,6 @@ RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | tee /etc
 RUN apt-get update
 RUN apt-get -y install libpq-dev php8.0 php8.0-fpm php8.0-pgsql php8.0-mysql nginx
 
-#WORKDIR /myapp
-
 COPY ./app /var/www/html/
 COPY ./example.com /etc/nginx/sites-available/default
 RUN rm /etc/nginx/sites-enabled/default

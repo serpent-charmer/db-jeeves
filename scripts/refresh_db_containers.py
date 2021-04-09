@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import docker
 
 def refresh_container(client, containers_names):
