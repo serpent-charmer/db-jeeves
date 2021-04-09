@@ -76,6 +76,7 @@
         .dropdown {
             position: relative;
             display: inline-block;
+
         }
 
         .dropdown-content {
@@ -115,15 +116,11 @@
         #is-synced-container {
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin: 1%;
         }
 
         #is-synced {
-            width: 100%;
-            text-align: center;
-            border-radius: 15px;
-            font-size: 150%;
+            display: flex;
+            align-items: center;
         }
 
         #padded-container {
@@ -134,7 +131,6 @@
         }
 
         #controls {
-            padding: 1% 5% 1% 5%;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -143,7 +139,7 @@
 
         #suite {
             display: flex;
-            height: 70%;
+            height: 91%;
             border: 15px solid rgb(199, 213, 224);
             border-radius: 15px;
             background-color: #fbf4f4 !important;
@@ -167,11 +163,6 @@
             height: 100%;
         }
 
-        #user-name div {
-            /* font-size: 25; */
-            /* display: inline-block; */
-        }
-
         .fancytree-container {
             background-color: #e8e8e8 !important;
             height: 100%;
@@ -179,15 +170,40 @@
 
         header {
             display: flex;
+        }
+
+        nav {
+            display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: start;
+        }
+
+        nav ul {
+            padding:0px;
+            margin:5px;
+            align-content: center;
+        }
+
+        nav ul {
+            
+            transition: all 0.3s ease 0s;
+            
+        }
+        nav ul a {
+            text-decoration: none;
+            color: teal;
+        }
+
+        nav ul a:hover {
+            border-radius: 5px;
+            background-color: rgb(126, 167, 185);
+            
         }
 
         footer {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 30px;
         }
 
         #spinner {
@@ -199,7 +215,7 @@
             width: 100%;
             height: 100%;
             z-index: 99999;
-            visibility: hidden;
+            visibility: collapse;
         }
 
         #spinner-inner {
@@ -229,7 +245,7 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            visibility: hidden;
+            visibility: collapse;
             z-index: 999999;
             display: inline-block;
             overflow-y: scroll;
@@ -254,7 +270,7 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            visibility: hidden;
+            visibility: collapse;
             z-index: 999999;
             display: inline-block;
         }
@@ -334,46 +350,59 @@
         </div>
 
     </div>
-    <div id="vendor" style="visibility:hidden;">{{current_user.vendor}}</div>
-    <div id="read-only" style="visibility:hidden;">{{read_only}}</div>
+    <div id="vendor" style="display:none;">{{current_user.vendor}}</div>
+    <div id="read-only" style="display:none;">{{read_only}}</div>
     <div id="#main-container">
         <div id="padded-container">
-
             <header>
-                {% if read_only=='true' %}
-                    <a href="/show_all">Back</a>
-                {% else %}
-                    <a href="/">Back</a>
-                {% endif %}
-                <div class="dropdown">
-                    <button class="dropbtn">...</button>
-                    <div class="dropdown-content">
-                        <a href="#" onclick="test()">Vi</a>
-                        {% if read_only == 'false' %}
-                        <a href="/edit_sql">SQL</a>
-                        <a target="#" onclick="getLogs()">Logs</a>
-                        <a target="#" onclick="getDiagram()">Diagram</a>
-                        <a target="#" onclick="getInstance()">Instance</a>
+                <nav>
+                    <ul>
+                        {% if read_only=='true' %}
+                        <a href="/show_all">Back</a>
                         {% else %}
-                        <a href="/view_diagram/{{current_user.identity}}">Diagram</a>
+                        <a href="/">Back</a>
                         {% endif %}
+                    </ul>
 
-                    </div>
-                </div>
+                    
+
+                    <ul>
+                        <a href="#" onclick="test()">Vi</a>
+                    </ul>
+                    {% if read_only == 'false' %}
+                    <ul>
+                        <a href="/edit_sql">SQL</a>
+                    </ul>
+                    <ul> <a href="#" onclick="getLogs()">Logs</a></ul>
+                    <ul><a href="#" onclick="getDiagram()">Diagram</a></ul>
+                    <ul> <a href="#" onclick="getInstance()">Instance</a></ul>
+                    {% else %}
+                    <ul><a href="/view_diagram/{{current_user.identity}}">Diagram</a></ul>
+                    {% endif %}
+                    {% if read_only == 'false' %}
+                    
+                    <ul>
+                        <div id="user-name">
+                            <div>USR:{{current_user.nickname}}</div>
+                        </div>
+                    </ul>
+                    <ul>
+                        <div id="is-synced-container">
+                            <div id="is-synced">SYNCED</div>
+                        </div>
+                    </ul>
+                    {% else %}
+                    <ul>
+                        <div id="user-name">
+                            <div>Reviewing {{reviewed_user}}</div>
+                        </div>
+                    </ul>
+                    {% endif %}
+                </nav>
+
 
             </header>
-            {% if read_only == 'false' %}
-            <div id="is-synced-container">
-                <div id="is-synced">SYNCED</div>
-            </div>
-            <div id="user-name" align="center">
-                <div>{{current_user.nickname}}</div>
-            </div>
-            {% else %}
-            <div id="user-name" align="center">
-                <div>Reviewing {{reviewed_user}}</div>
-            </div>
-            {% endif %}
+            
 
 
             <div id="controls">
@@ -424,7 +453,7 @@
         };
 
         jQuery.fn.invisible = function () {
-            return this.css('visibility', 'hidden');
+            return this.css('visibility', 'collapse');
         };
 
         function isObjNull(obj) {
