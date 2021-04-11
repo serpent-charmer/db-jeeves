@@ -123,12 +123,7 @@
             align-items: center;
         }
 
-        #padded-container {
-            margin-left: 5%;
-            margin-right: 5%;
-            padding-left: 3%;
-            padding-right: 3%;
-        }
+        #padded-container {}
 
         #controls {
             display: flex;
@@ -140,7 +135,6 @@
         #suite {
             display: flex;
             height: 91%;
-            border: 15px solid rgb(199, 213, 224);
             border-radius: 15px;
             background-color: #fbf4f4 !important;
         }
@@ -155,6 +149,7 @@
         }
 
         #editor-container {
+            margin-left: 3vmax;
             width: 100%;
         }
 
@@ -172,32 +167,54 @@
             display: flex;
         }
 
+        #breadcrumb {
+            display: flex;
+            justify-content: start;
+            align-items: center;
+            background-color: rgb(126, 167, 185);
+            margin-bottom: 15px;
+        }
+        #breadcrumb div {
+            margin-left: 15px;
+            padding-left: 0px;
+            background-color: teal;
+            color: rgb(60, 238, 238);
+        }
+
+        @keyframes slideDown {
+            100% {
+                transform: translateY(5px);
+            }
+        }
+
         nav {
             display: flex;
-            align-items: center;
             justify-content: start;
+
+            
         }
 
         nav ul {
-            padding:0px;
+            font-size: 3vmax;
             margin:5px;
-            align-content: center;
+
+            
         }
 
-        nav ul {
-            
-            transition: all 0.3s ease 0s;
-            
+
+        nav ul div {
+            border-radius: 5px;
         }
-        nav ul a {
+
+        nav ul div a {
             text-decoration: none;
             color: teal;
+            transition: color 0.3s ease 0s;
         }
 
-        nav ul a:hover {
-            border-radius: 5px;
-            background-color: rgb(126, 167, 185);
-            
+        nav ul div:hover {
+            animation: 0.1s ease-out 0s 1 slideDown;
+            animation-fill-mode: forwards;
         }
 
         footer {
@@ -358,52 +375,62 @@
                 <nav>
                     <ul>
                         {% if read_only=='true' %}
-                        <a href="/show_all">Back</a>
+                        <div>
+                            <a href="/show_all">Back</a>
+                        </div>
+
                         {% else %}
-                        <a href="/">Back</a>
+                        <div>
+                            <a href="/">Back</a>
+                        </div>
                         {% endif %}
                     </ul>
 
-                    
 
-                    <ul>
-                        <a href="#" onclick="test()">Vi</a>
-                    </ul>
+
                     {% if read_only == 'false' %}
                     <ul>
-                        <a href="/edit_sql">SQL</a>
+                        <div>
+                            <a href="/edit_sql">SQL</a>
+                        </div>
                     </ul>
-                    <ul> <a href="#" onclick="getLogs()">Logs</a></ul>
-                    <ul><a href="#" onclick="getDiagram()">Diagram</a></ul>
-                    <ul> <a href="#" onclick="getInstance()">Instance</a></ul>
+                    <ul> 
+                        <div>
+                            <a href="#" onclick="getLogs()">Logs</a>
+                        </div>
+                        </ul>
+                    <ul>
+                        <div>
+                            <a href="#" onclick="getDiagram()">Diagram</a>
+                        </div></ul>
+                    <ul> <div>
+                        <a href="#" onclick="getInstance()">Instance</a>
+                    </div></ul>
                     {% else %}
-                    <ul><a href="/view_diagram/{{current_user.identity}}">Diagram</a></ul>
+                    <ul><div>
+                        <a href="/view_diagram/{{current_user.identity}}">Diagram</a>
+                    </div></ul>
                     {% endif %}
-                    {% if read_only == 'false' %}
-                    
-                    <ul>
-                        <div id="user-name">
-                            <div>USR:{{current_user.nickname}}</div>
-                        </div>
-                    </ul>
-                    <ul>
-                        <div id="is-synced-container">
-                            <div id="is-synced">SYNCED</div>
-                        </div>
-                    </ul>
-                    {% else %}
-                    <ul>
-                        <div id="user-name">
-                            <div>Reviewing {{reviewed_user}}</div>
-                        </div>
-                    </ul>
-                    {% endif %}
+
                 </nav>
 
 
             </header>
-            
 
+            <div id="breadcrumb">
+                {% if read_only == 'false' %}
+                <div id="user-name">
+                    {{current_user.nickname}}
+                </div>
+
+                <div id="is-synced">SYNCED</div>
+                {% else %}
+                <div>Reviewing </div>
+                <div id="user-name">
+                     {{reviewed_user}}
+                </div>
+                {% endif %}
+            </div>
 
             <div id="controls">
                 <div id="spinner">

@@ -24,25 +24,23 @@
             height: 250px;
         }
 
-        #main-container {
-            margin-left: 5%;
-            margin-right: 5%;
+        body {
+            margin: 0px;
         }
 
-        #padded-container {
-            padding-left: 5%;
-            padding-right: 5%;
-        }
+        #main-container {}
+
+        #padded-container {}
 
         #sql-result {
             margin-bottom: 5%;
             overflow-y: scroll !important;
-            max-height:350px;
+            max-height: 350px;
         }
 
         #sql-status-desc {
-            overflow-y:auto;
-            margin-top:5%;
+            overflow-y: auto;
+            margin-top: 1%;
         }
 
         header {
@@ -51,9 +49,27 @@
         }
 
         .tab-container {
-            margin-top: 5%;
+            margin-top: 3%;
+            margin-left: 3%;
+            margin-right: 3%;
         }
 
+        #breadcrumb {
+            display: flex;
+            justify-content: start;
+            align-items: center;
+            background-color: rgb(126, 167, 185);
+            margin-bottom: 15px;
+        }
+
+
+
+        #breadcrumb div {
+            margin-left: 15px;
+            padding-left: 0px;
+            background-color: teal;
+            color: rgb(60, 238, 238);
+        }
     </style>
 
 </head>
@@ -62,23 +78,28 @@
     <div id="main-container">
 
         <div id="padded-container">
-            <div style="margin-bottom:1%;">
+            <div style="margin-bottom:1%; margin-top:1%; text-align: center;">
                 <a href="/view_project">Back</a>
             </div>
-            <header>
-                <p>Vendor: {{current_user.vendor}}</p>
-
-            </header>
-            
-            <div>
+            <div id="breadcrumb">
+                <div>
+                    Vendor: {{current_user.vendor}}
+                </div>
+            </div>
+            <div style="margin-bottom:1%; margin-top:1%; text-align: center;">
                 <p id="sql-status">Run some SQL</p>
             </div>
-            
+
             <div>
                 <div id="editor"></div>
             </div>
-            <div style="display:none;" id="sql-status-desc">None</div>
-            <div id="sql-result" class="tab-container"></div>
+
+            <div class="tab-container">
+                <div id="sql-result">
+
+                </div>
+                <div style="display:none;text-align:center;" id="sql-status-desc">None</div>
+            </div>
         </div>
     </div>
 </body>

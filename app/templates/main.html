@@ -14,6 +14,12 @@
             font-family: "JetBrainsMono-Regular";
         }
 
+        @keyframes slideDown {
+            100% {
+                transform: translateY(5px);
+            }
+        }
+
         select {
             appearance: none;
             background-color: transparent;
@@ -27,10 +33,12 @@
             text-align: center;
             transition: all 0.3s ease 0s;
             border-radius: 5px;
+            color: teal;
         }
 
         select:hover {
-            background-color: rgb(126, 167, 185);
+            animation: 0.1s ease-out 0s 1 slideDown;
+            animation-fill-mode: forwards;
         }
 
         select option {
@@ -43,15 +51,27 @@
         }
 
         #main-container {
-            height: 100%;
             margin-left: 5%;
             margin-right: 5%;
             text-align: center;
         }
 
         .soptions {
-            justify-content: space-evenly;
-            display: flex;
+            display: inline-block;
+            margin-bottom: 5%;
+        }
+
+        #cont2 {
+            display: inline-block;
+        }
+
+        #cont2 div {
+            margin-bottom:1%;
+        }
+
+        #cont2 div:hover {
+            animation: 0.1s ease-out 0s 1 slideDown;
+            animation-fill-mode: forwards;
         }
     </style>
 </head>
@@ -62,23 +82,30 @@
             <a href="/logout">Выйти</a>
         </div>
         <h4><a href="/greetings">Описание</a></h4>
-        <div id="main" style="padding: 0% 5% 5% 5%;">
+        <div id="main">
             <div class="soptions">
+                <div>Язык программирования</div>
                 <select id="lang">
                     <option value="javascript">JS</option>
                     <option value="python">PY</option>
                     <option value="php">PHP</option>
                 </select>
+                <div>Тип базы данных</div>
                 <select id="vendor">
                     <option value="mysql">MYSQL</option>
                     <option value="postgresql">PGSQL</option>
                 </select>
             </div>
+            
 
-            <a href="#" onclick="create()" style="margin:30px">Создать</a>
-
-            <div style="margin-top:1%;"><a target="_blank" href="/view_project">Просмотреть</a></div>
             <div id="status" style="margin-top:1%;display:none">Готово!</div>
+        </div>
+        <div id="cont2">
+            <div>
+                <a href="#" onclick="create()" style="margin:30px">Создать</a>
+            </div>
+
+            <div><a target="_blank" href="/view_project">Просмотреть</a></div>
         </div>
     </div>
 </body>
@@ -108,7 +135,7 @@
     }
 
 
-   
+
 
 </script>
 
