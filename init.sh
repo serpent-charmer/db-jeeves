@@ -1,9 +1,8 @@
-./create_service.py
 ./scripts/build_all.sh
 ./scripts/create_db_net.sh
 ./scripts/mysql.sh
 ./scripts/postgresql.sh
-cp ./db_jeeves.service /etc/systemd/system
+cp ./services/db_jeeves.service /etc/systemd/system
 groupadd docker
 groupadd webdev
 usermod -aG docker db_jeeves_user
