@@ -3,6 +3,7 @@
 ./scripts/mysql.sh
 ./scripts/postgresql.sh
 cp ./services/db_jeeves.service /etc/systemd/system
+cp ./schemacrawler /usr/local/bin
 groupadd docker
 groupadd webdev
 usermod -aG docker db_jeeves_user

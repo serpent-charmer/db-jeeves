@@ -7,7 +7,7 @@ User=db_jeeves_user
 Group=webdev
 
 WorkingDirectory={0}
-ExecStart={0}/run_gunicorn.sh
+ExecStart={0}/setup/run_gunicorn.sh
 Restart=always
 
 [Install]
